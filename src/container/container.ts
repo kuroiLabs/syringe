@@ -22,7 +22,7 @@ export namespace Container {
       const _scope = _token.scope || generateId()
       return _generate(_scope, _token) as T
     }
-    throw new NullInjectionTokenError('No injection token for "' + _key + '"')
+    throw new NullInjectionTokenError(_key)
   }
 
   export function addDependency(_client: Object, _token: InjectionToken, _index: number): void {
@@ -39,7 +39,7 @@ export namespace Container {
     _key = _extractEntityName(_key)
     const _token = InjectionTokens.get(_key)
     if (!_token) {
-      throw new NullInjectionTokenError('Invalid token: ' + _key)
+      throw new NullInjectionTokenError(_key)
     }
     return _token
   }
