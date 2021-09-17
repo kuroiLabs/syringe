@@ -2,7 +2,7 @@ import { addDependency, getToken, inject } from '../container'
 import { InjectionToken } from '../injection-token'
 
 /**
- * Decorates injected constructor parameters
+ * @description Decorates injected constructor parameters
  */
 export function Inject(_token: InjectionToken | Function) {
   if (!(_token instanceof InjectionToken) && typeof _token === 'function') {
