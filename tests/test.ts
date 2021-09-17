@@ -1,4 +1,4 @@
-import { Syringe } from '../src/syringe'
+import { Syringe } from '../src'
 
 // manually constructed injection token
 const helloMessage = 'Jerry, hello!'
@@ -48,6 +48,7 @@ class Component {
 // retrieve instance from 
 const _component1: Component = Syringe.inject(Component)
 const _component2: Component = Syringe.inject(Component)
+console.log('Initialized components:', _component1, _component2)
 // run greet logic -- should show two different Component IDs
 _component1.greet()
 _component2.greet()
