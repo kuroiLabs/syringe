@@ -24,8 +24,7 @@ class IndependentClass {
 class Service {
   private id: string
   constructor(@Syringe.Inject(IndependentClass) public dependency: IndependentClass) {
-    const _hex = (Math.random() * 10 ** 10).toString(16)
-    this.id = _hex.substring(2, 8)
+    this.id = Syringe.generateId()
   }
   goodbye() {
     console.log('Goodbye from Service ' + this.id + '!')
@@ -38,26 +37,23 @@ class Component {
   private id: string
 
   constructor(@Syringe.Inject(Service) public service: Service) {
-    const _hex = Date.now().toString(16)
-    this.id = _hex.substring(2, _hex.length)
+    this.id = Syringe.generateId()
   }
 
   public greet() {
-    console.log('Greetings from ' + this.id + '!')
+    console.log('Greetings from Component ' + this.id + '!')
   }
 }
 
 // retrieve instance from 
 const _component1: Component = Syringe.inject(Component)
-// const _component2: Component = Syringe.inject(Component)
-
-// console.log('COMPONENTS:::', _component1, _component2)
-
+const _component2: Component = Syringe.inject(Component)
+// run greet logic -- should show two different Component IDs
 _component1.greet()
-// _component2.greet()
-
+_component2.greet()
+// run goodbye logic from injected service -- both logs should show the same Service ID
 _component1.service.goodbye()
-// _component2.service.goodbye()
+_component2.service.goodbye()
 
 // test suite scenario, using manual DI
 // const _independent = new IndependentClass(`It's me, Uncle Leo!`)
