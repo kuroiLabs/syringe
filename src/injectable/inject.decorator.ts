@@ -1,5 +1,5 @@
 import { addDependency, getToken, inject } from '../container'
-import { InjectionToken } from '../injection-token/injection-token'
+import { InjectionToken } from '../injection-token'
 
 /**
  * Decorates injected constructor parameters

@@ -1,6 +1,5 @@
 import { registerToken } from '../container'
-import { InjectionToken } from '../injection-token/injection-token'
-import { InjectionTokenConfig } from '../injection-token/injection-token-config.interface'
+import { InjectionToken, InjectionTokenConfig } from '../injection-token'
 
 /**
  * @description Decorates a class as an injectable entity, generates an InjectionToken,

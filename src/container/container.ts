@@ -1,4 +1,4 @@
-import { InjectionToken } from '../injection-token/injection-token'
+import { InjectionToken } from '../injection-token'
 import { generateId, CircularDependencyError, NullInjectionTokenError } from '../utils'
 
 export namespace Container {
@@ -23,7 +23,6 @@ export namespace Container {
       // create own scope if none detected to keep instances separate
       const _scope = _token.scope || generateId()
       const _instance = _generate(_scope, _token)
-      _cacheInstance(_token.scope, _token, _instance)
       return _instance as T
     }
     throw new NullInjectionTokenError('No injection token for "' + _key + '"')
@@ -58,9 +57,7 @@ export namespace Container {
     _checkForCircularDependency(_token)
     const _dependencies: any[] = _recursivelyGenerateDependencies(_scope, _token)
     const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
-    if (_token.isSingleton) {
-      _cacheInstance(_scope, _token, _instance)
-    }
+    _cacheInstance(_scope, _token, _instance)
     return _instance
   }
 
@@ -98,7 +95,7 @@ export namespace Container {
 
   function _checkForCircularDependency(_token: InjectionToken): void {
     const _dependencies: string[] = DependencyMap.get(_token.name)
-    if (!_dependencies) {
+    if (!_dependencies || !_dependencies.length) {
       return
     }
     const _circularDependencyIndex: number = _dependencies.indexOf(_token.name)
