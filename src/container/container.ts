@@ -26,7 +26,7 @@ export namespace Container {
       _cacheInstance(_token.scope, _token, _instance)
       return _instance as T
     }
-    throw new NullInjectionTokenError('No injection token for ' + _key)
+    throw new NullInjectionTokenError('No injection token for "' + _key + '"')
   }
 
   export function addDependency(_injectionClient: Object, _token: InjectionToken, _index: number) {
