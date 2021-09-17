@@ -55,10 +55,7 @@ export namespace Container {
     if (_cachedInstance) {
       return _cachedInstance
     }
-    const _circularDependencyError: CircularDependencyError = _checkForCircularDependency(_token)
-    if (_circularDependencyError) {
-      throw _circularDependencyError
-    }
+    _checkForCircularDependency(_token)
     const _dependencies: any[] = _recursivelyGenerateDependencies(_scope, _token)
     const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
     if (_token.isSingleton) {
@@ -99,17 +96,16 @@ export namespace Container {
     return _instance
   }
 
-  function _checkForCircularDependency(_token: InjectionToken): CircularDependencyError | null {
+  function _checkForCircularDependency(_token: InjectionToken): void {
     const _dependencies: string[] = DependencyMap.get(_token.name)
     if (!_dependencies) {
-      return null
+      return
     }
     const _circularDependencyIndex: number = _dependencies.indexOf(_token.name)
     if (_circularDependencyIndex > -1) {
       const _circularDependencyName: string = _dependencies[_circularDependencyIndex]
-      return new CircularDependencyError(`${_circularDependencyName} -> ${_token.name} -> ${_circularDependencyName}`)
+      throw new CircularDependencyError(`${_circularDependencyName} -> ${_token.name} -> ${_circularDependencyName}`)
     }
-    return null
   }
 
   function _cacheInstance(_scope: string, _token: InjectionToken, _instance: any): void {
