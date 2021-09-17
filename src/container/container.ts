@@ -38,10 +38,10 @@ export namespace Container {
   export function getToken(_key: Function | string): InjectionToken {
     _key = _extractEntityName(_key)
     const _token = InjectionTokens.get(_key)
-    if (!_token) {
-      throw new NullInjectionTokenError(_key)
+    if (_token) {
+      return _token
     }
-    return _token
+    throw new NullInjectionTokenError(_key)
   }
 
   export function closeScope(_key: Function | string): void {
