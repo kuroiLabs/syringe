@@ -1,1 +1,1 @@
-export * from './syringe'
+export * as Syringe from './public-api'
