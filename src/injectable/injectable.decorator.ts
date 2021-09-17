@@ -1,4 +1,4 @@
-import { Container } from '../container'
+import { registerToken } from '../container'
 import { InjectionToken } from '../injection-token/injection-token'
 import { InjectionTokenConfig } from '../injection-token/injection-token-config.interface'
 
@@ -15,5 +15,5 @@ export const Injectable = (_token?: InjectionTokenConfig) => (_constructor: Func
     scope: _token && _token.scope,
     factory: () => _constructor
   })
-  Container.registerToken(_injectionToken)
+  registerToken(_injectionToken)
 }
