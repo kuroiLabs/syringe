@@ -22,8 +22,7 @@ export namespace Container {
     if (_token) {
       // create own scope if none detected to keep instances separate
       const _scope = _token.scope || generateId()
-      const _instance = _generate(_scope, _token)
-      return _instance as T
+      return _generate(_scope, _token) as T
     }
     throw new NullInjectionTokenError('No injection token for "' + _key + '"')
   }
@@ -63,16 +62,14 @@ export namespace Container {
 
   function _getCachedInstance(_scope: any, _token: InjectionToken): any | null {
     if (CachedInstances.has(_scope)) {
-      const _instance = CachedInstances.get(_scope).get(_token.id)
-      if (_instance) {
-        return _instance
-      }
+      return CachedInstances.get(_scope).get(_token.id) || null
     }
     return null
   }
 
   function _recursivelyGenerateDependencies(_scope: any, _token: InjectionToken): any[] {
-    return (DependencyMap.get(_token.name) || []).map(
+    const _dependencies: any[] = DependencyMap.get(_token.name) || [] 
+    return _dependencies.map(
       _dependencyName => {
         const _dependencyToken = getToken(_dependencyName)
         const _dependencyInstance = _generate(_dependencyToken.scope, _dependencyToken)
