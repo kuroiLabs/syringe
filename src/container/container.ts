@@ -20,9 +20,6 @@ export namespace Container {
     }
     const _token = InjectionTokens.get(_key)
     if (_token) {
-      if (_token.isSingleton) {
-        return _generate('global', _token)
-      }
       // create own scope if none detected to keep instances separate
       const _scope = _token.scope || generateId()
       const _instance = _generate(_scope, _token)
