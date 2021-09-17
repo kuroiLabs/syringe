@@ -4,9 +4,10 @@
   "description": "TypeScript dependency injection framework",
   "main": "index.js",
   "scripts": {
+    "build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json",
     "pack": "npm pack ./dist",
     "publish": "npm publish ./dist --access=public --scope=@kuroi",
-    "test": "ts-node tests/test.ts" 
+    "test": "ts-node tests/test.ts"
   },
   "keywords": [
     "di",
@@ -16,6 +17,7 @@
   "author": "kuro <kuro@kuroi.io>",
   "license": "ISC",
   "devDependencies": {
+    "shx": "^0.3.3",
     "ts-node": "^10.2.1",
     "typescript": "^3.5.1"
   }
