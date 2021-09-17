@@ -51,7 +51,6 @@ export namespace Container {
 
   //#region private functions
   function _generate(_scope: any, _token: InjectionToken): any {
-    // check if instance has already been generated
     const _cachedInstance: any = _getCachedInstance(_scope, _token)
     if (_cachedInstance) {
       return _cachedInstance
@@ -60,7 +59,6 @@ export namespace Container {
     if (_circularDependencyError) {
       throw _circularDependencyError
     }
-    // recursively generate dependencies
     const _dependencies: any[] = _recursivelyGenerateDependencies(_scope, _token)
     const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
     if (_token.isSingleton) {
