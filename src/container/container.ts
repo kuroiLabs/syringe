@@ -15,9 +15,7 @@ export namespace Container {
   }
 
   export function inject<T = any>(_key: string | Function): T {
-    if (typeof _key === 'function') {
-      _key = _key.name
-    }
+    _key = _extractEntityName(_key)
     const _token = InjectionTokens.get(_key)
     if (_token) {
       // create own scope if none detected to keep instances separate
@@ -27,23 +25,39 @@ export namespace Container {
     throw new NullInjectionTokenError('No injection token for "' + _key + '"')
   }
 
-  export function addDependency(_injectionClient: Object, _token: InjectionToken, _index: number) {
-    if (!DependencyMap.has(_injectionClient['name'])) {
-      DependencyMap.set(_injectionClient['name'], [])
+  export function addDependency(_client: Object, _token: InjectionToken, _index: number): void {
+    if (!DependencyMap.has(_client['name'])) {
+      DependencyMap.set(_client['name'], [])
     }
-    const _dependencies = DependencyMap.get(_injectionClient['name'])
+    const _dependencies = DependencyMap.get(_client['name'])
     if (!_dependencies[_index]) {
       _dependencies[_index] = _token.name
     }
-    return inject(_token.name)
   }
 
-  export function getToken(_key: string): InjectionToken {
+  export function getToken(_key: Function | string): InjectionToken {
+    _key = _extractEntityName(_key)
     const _token = InjectionTokens.get(_key)
     if (!_token) {
-      throw new Error('Invalid token: ' + _key)
+      throw new NullInjectionTokenError('Invalid token: ' + _key)
     }
     return _token
+  }
+
+  export function closeScope(_key: Function | string): void {
+    const _token: InjectionToken = getToken(_key)
+    const _scope: any = _token.scope
+    if (_scope) {
+      CachedInstances.delete(_scope)
+    }
+  }
+
+  export function destroyInstance(_scope: any, _key: Function | string): void {
+    const _instanceMap = CachedInstances.get(_scope)
+    if (_instanceMap) {
+      _key = _extractEntityName(_key)
+      _instanceMap.delete(_key)
+    }
   }
   //#endregion
 
@@ -107,6 +121,13 @@ export namespace Container {
       CachedInstances.set(_scope, new Map())
     }
     CachedInstances.get(_scope).set(_token.id, _instance)
+  }
+  
+  function _extractEntityName(_entity: Function | string): string {
+    if (typeof _entity === 'function') {
+      return _entity.name
+    }
+    return _entity
   }
   //#endregion
 
