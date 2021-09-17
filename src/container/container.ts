@@ -68,7 +68,7 @@ export namespace Container {
       return _cachedInstance
     }
     _checkForCircularDependency(_token)
-    const _dependencies: any[] = _recursivelyGenerateDependencies(_scope, _token)
+    const _dependencies: any[] = _generateDependencies(_scope, _token)
     const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
     _cacheInstance(_scope, _token, _instance)
     return _instance
@@ -81,7 +81,7 @@ export namespace Container {
     return null
   }
 
-  function _recursivelyGenerateDependencies(_scope: any, _token: InjectionToken): any[] {
+  function _generateDependencies(_scope: any, _token: InjectionToken): any[] {
     const _dependencies: any[] = DependencyMap.get(_token.name) || [] 
     return _dependencies.map(
       _dependencyName => {
