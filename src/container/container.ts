@@ -1,12 +1,14 @@
 import { InjectionToken } from '../injection-token'
-import { generateId, CircularDependencyError, NullInjectionTokenError } from '../utils'
+import { CircularDependencyError, NullInjectionTokenError } from '../utils'
 
 export namespace Container {
-  
-  //#region private values
-  const InjectionTokens = new Map<string, InjectionToken>() // token name -> token
-  const DependencyMap = new Map<string, string[]>() // token name -> dependency names
-  const CachedInstances = new Map<any, Map<string, any>>() // scope -> token ID -> cached instance
+
+  //#region maps and caches
+  // @note: exporting these is probably not necessary in the future.
+  // they're only exported for testing and debugging purposes.
+  export const InjectionTokens = new Map<string, InjectionToken>() // token name -> token
+  export const DependencyMap = new Map<string, string[]>() // token name -> dependency names
+  export const CachedInstances = new Map<any, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
   //#endregion
 
   //#region public functions
@@ -14,12 +16,11 @@ export namespace Container {
     InjectionTokens.set(_token.name, _token)
   }
 
-  export function inject<T = any>(_key: string | Function): T {
+  export function inject<T = any>(_key: string | Function, _scope?: any): T {
     _key = _extractEntityName(_key)
-    const _token = InjectionTokens.get(_key)
+    const _token = getToken(_key)
     if (_token) {
-      // create own scope if none detected to keep instances separate
-      const _scope = _token.scope || generateId()
+      _scope = _scope || _token.scope || _token.factory()
       return _generate(_scope, _token) as T
     }
     throw new NullInjectionTokenError(_key)
@@ -44,19 +45,13 @@ export namespace Container {
     throw new NullInjectionTokenError(_key)
   }
 
-  export function closeScope(_key: Function | string): void {
-    const _token: InjectionToken = getToken(_key)
-    const _scope: any = _token.scope
-    if (_scope) {
-      CachedInstances.delete(_scope)
-    }
-  }
-
-  export function destroyInstance(_scope: any, _key: Function | string): void {
+  export function destroyInstance(_scope: any, _token: InjectionToken): void {
     const _instanceMap = CachedInstances.get(_scope)
     if (_instanceMap) {
-      _key = _extractEntityName(_key)
-      _instanceMap.delete(_key)
+      _instanceMap.delete(_token)
+      if (!_instanceMap.size) {
+        CachedInstances.delete(_scope)
+      }
     }
   }
   //#endregion
@@ -76,9 +71,19 @@ export namespace Container {
 
   function _getCachedInstance(_scope: any, _token: InjectionToken): any | null {
     if (CachedInstances.has(_scope)) {
-      return CachedInstances.get(_scope).get(_token.id) || null
+      return CachedInstances.get(_scope).get(_token) || null
     }
     return null
+  }
+
+  function _cacheInstance(_scope: any, _token: InjectionToken, _instance: any): void {
+    if (!_scope) {
+      console.warn('Undefined scope for ' + _token.name)
+    }
+    if (!CachedInstances.has(_scope)) {
+      CachedInstances.set(_scope, new Map())
+    }
+    CachedInstances.get(_scope).set(_token, _instance)
   }
 
   function _generateDependencies(_scope: any, _token: InjectionToken): any[] {
@@ -86,8 +91,7 @@ export namespace Container {
     return _dependencies.map(
       _dependencyName => {
         const _dependencyToken = getToken(_dependencyName)
-        const _dependencyInstance = _generate(_dependencyToken.scope, _dependencyToken)
-        _cacheInstance(_scope, _dependencyToken, _dependencyInstance)
+        const _dependencyInstance = _generate(_token.factory(), _dependencyToken)
         return _dependencyInstance
       }
     )
@@ -114,13 +118,6 @@ export namespace Container {
       const _circularDependencyName: string = _dependencies[_circularDependencyIndex]
       throw new CircularDependencyError(`${_circularDependencyName} -> ${_token.name} -> ${_circularDependencyName}`)
     }
-  }
-
-  function _cacheInstance(_scope: string, _token: InjectionToken, _instance: any): void {
-    if (!CachedInstances.has(_scope)) {
-      CachedInstances.set(_scope, new Map())
-    }
-    CachedInstances.get(_scope).set(_token.id, _instance)
   }
   
   function _extractEntityName(_entity: Function | string): string {
