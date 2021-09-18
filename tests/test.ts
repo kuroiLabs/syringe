@@ -1,9 +1,11 @@
 import { Syringe } from '../src'
+import { generateId } from '../src/utils'
 
 // manually constructed injection token
 const helloMessage = 'Jerry, hello!'
 const HELLO = new Syringe.InjectionToken('HELLO_MESSAGE', {
-  factory: () => helloMessage
+  factory: () => helloMessage,
+  scope: 'global'
 })
 
 // non-singleton, scoped injectable
@@ -46,15 +48,22 @@ class Component {
 }
 
 // retrieve instance from 
-const _component1: Component = Syringe.inject(Component)
-const _component2: Component = Syringe.inject(Component)
-console.log('Initialized components:', _component1, _component2)
+const _component1: Component = Syringe.inject(Component, generateId())
+let _component2: Component = Syringe.inject(Component, generateId())
 // run greet logic -- should show two different Component IDs
 _component1.greet()
 _component2.greet()
 // run goodbye logic from injected service -- both logs should show the same Service ID
 _component1.service.goodbye()
 _component2.service.goodbye()
+
+// _component2['__destroyInjectable']()
+// _component2 = null
+
+console.log(
+  'TOKENS:::', Syringe.Container.InjectionTokens, '\n',
+  'INSTANCES:::', Syringe.Container.CachedInstances, '\n'
+)
 
 // test suite scenario, using manual DI
 // const _independent = new IndependentClass(`It's me, Uncle Leo!`)
