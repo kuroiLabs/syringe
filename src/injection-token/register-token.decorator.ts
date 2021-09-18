@@ -1,4 +1,4 @@
-import { registerToken } from '../container'
+import { Container } from '../container'
 
 /**
  * @description Wraps the InjectionToken constructor to allow for code execution
@@ -8,7 +8,7 @@ export function RegisterToken<T extends { new(...args: any[]): {} }>(_constructo
   return class extends _constructor {
     constructor(...args: any[]) {
       super(...args)
-      registerToken(<any>this)
+      Container.registerToken(<any>this)
     }
   }
 }
