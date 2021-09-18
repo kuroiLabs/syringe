@@ -1,4 +1,4 @@
-import { generateId } from '../utils'
+import { Constants, generateId } from '../utils'
 import { InjectionTokenConfig } from './injection-token-config.interface'
 import { RegisterToken } from './register-token.decorator'
 
@@ -14,7 +14,7 @@ export class InjectionToken implements InjectionTokenConfig {
   public factory: () => any
 
   get isSingleton(): boolean {
-    return this.scope === 'global'
+    return this.scope === Constants.GLOBAL_SCOPE
   }
 
   constructor(_name: string, _config: InjectionTokenConfig) {
