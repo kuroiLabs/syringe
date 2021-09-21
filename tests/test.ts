@@ -1,7 +1,7 @@
 import { Syringe } from '../src'
 import { generateId } from '../src/utils'
 
-// manually constructed injection token
+// manually constructed injection token to represent constant value
 const helloMessage = 'Jerry, hello!'
 const HELLO = new Syringe.InjectionToken('HELLO_MESSAGE', {
   factory: () => helloMessage,
@@ -11,7 +11,9 @@ const HELLO = new Syringe.InjectionToken('HELLO_MESSAGE', {
 // non-singleton, scoped injectable
 @Syringe.Injectable()
 class IndependentClass {
-  constructor(@Syringe.Inject(HELLO) private message: any) {
+  constructor(
+    @Syringe.Inject(HELLO) private message: any
+  ) {
 
   }
   hello() {
@@ -25,7 +27,9 @@ class IndependentClass {
 })
 class Service {
   private id: string
-  constructor(@Syringe.Inject(IndependentClass) public dependency: IndependentClass) {
+  constructor(
+    @Syringe.Inject(IndependentClass) public dependency: IndependentClass
+  ) {
     this.id = Syringe.generateId()
   }
   goodbye() {
@@ -38,7 +42,9 @@ class Component {
 
   private id: string
 
-  constructor(@Syringe.Inject(Service) public service: Service) {
+  constructor(
+    @Syringe.Inject(Service) public service: Service
+  ) {
     this.id = Syringe.generateId()
   }
 
@@ -53,6 +59,8 @@ let _component2: Component = Syringe.inject(Component, generateId())
 // run greet logic -- should show two different Component IDs
 _component1.greet()
 _component2.greet()
+
+_component2.service.dependency.hello()
 // run goodbye logic from injected service -- both logs should show the same Service ID
 _component1.service.goodbye()
 _component2.service.goodbye()
@@ -66,6 +74,6 @@ console.log(
 )
 
 // test suite scenario, using manual DI
-// const _independent = new IndependentClass(`It's me, Uncle Leo!`)
-// const _myOtherService: Service = new Service(_independent)
-// _myOtherService.dependency.hello()
+const _independent = new IndependentClass(`It's me, Uncle Leo!`)
+const _myOtherService: Service = new Service(_independent)
+_myOtherService.dependency.hello()
