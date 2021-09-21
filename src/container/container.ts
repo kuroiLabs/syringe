@@ -6,9 +6,9 @@ export namespace Container {
   //#region maps and caches
   // @note: exporting these is probably not necessary in the future.
   // they're only exported for testing and debugging purposes.
-  export const InjectionTokens = new Map<string, InjectionToken>() // token name -> token
-  export const DependencyMap = new Map<string, string[]>() // token name -> dependency names
-  export const CachedInstances = new Map<any, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
+  const InjectionTokens = new Map<string, InjectionToken>() // token name -> token
+  const DependencyMap = new Map<string, string[]>() // token name -> dependency names
+  const CachedInstances = new Map<any, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
   //#endregion
 
   //#region public functions
