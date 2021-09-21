@@ -48,6 +48,10 @@ export namespace Container {
   export function destroyInstance(_scope: any, _token: InjectionToken): void {
     const _instanceMap = CachedInstances.get(_scope)
     if (_instanceMap) {
+      const _instance = _instanceMap.get(_token)
+      if (_instance && _instance.onDestroy) {
+        _instance.onDestroy()
+      }
       _instanceMap.delete(_token)
       if (!_instanceMap.size) {
         CachedInstances.delete(_scope)
@@ -65,6 +69,9 @@ export namespace Container {
     _checkForCircularDependency(_token)
     const _dependencies: any[] = _generateDependencies(_scope, _token)
     const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
+    if (_instance.onInit) {
+      _instance.onInit()
+    }
     _cacheInstance(_scope, _token, _instance)
     return _instance
   }
