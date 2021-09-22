@@ -8,8 +8,5 @@
     "removeComments": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-  },
-  "exclude": [
-    "tests"
-  ]
+  }
 }
