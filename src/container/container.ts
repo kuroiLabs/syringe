@@ -56,7 +56,22 @@ export namespace Container {
       if (!_instanceMap.size) {
         CachedInstances.delete(_scope)
       }
+      const _factory: any = _token.factory()
+      const _hasScopedDependencies: boolean = CachedInstances.has(_factory)
+      if (_hasScopedDependencies) {
+        CachedInstances.get(_factory).forEach((_instance, _token) => {
+          destroyInstance(_factory, _token)
+        })
+      }
     }
+  }
+
+  export function destroyAllInstances(): void {
+    CachedInstances.forEach((_instanceMap, _scope) =>
+      _instanceMap.forEach((_, _token) =>
+        destroyInstance(_scope, _token)
+      )
+    )
   }
   //#endregion
 
@@ -98,7 +113,10 @@ export namespace Container {
     return _dependencies.map(
       _dependencyName => {
         const _dependencyToken = getToken(_dependencyName)
-        const _dependencyInstance = _generate(_token.factory(), _dependencyToken)
+        const _dependencyInstance = _generate(
+          _dependencyToken.scope || _token.factory(),
+          _dependencyToken
+        )
         return _dependencyInstance
       }
     )
