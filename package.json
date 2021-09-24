@@ -6,7 +6,8 @@
   "scripts": {
     "build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json",
     "pack": "npm pack ./dist",
-    "publish": "npm publish ./dist --access=public --scope=@kuroi",
+    "start:publish": "npm publish --access=public --scope=@kuroi",
+    "test:publish": "npm publish --access=public --scope=@kuroi --dry-run",
     "test": "ts-node tests/test.ts"
   },
   "keywords": [
