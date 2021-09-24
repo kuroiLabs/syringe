@@ -1,4 +1,5 @@
 import { Constants, generateId } from '../utils'
+import { InjectionScope } from './injection-scope.type'
 import { InjectionTokenConfig } from './injection-token-config.interface'
 import { RegisterToken } from './register-token.decorator'
 
@@ -9,7 +10,7 @@ export class InjectionToken implements InjectionTokenConfig {
 
   public name: string
 
-  public scope: any
+  public scope: InjectionScope
 
   public factory: () => any
 

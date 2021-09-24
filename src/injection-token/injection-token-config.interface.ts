@@ -1,5 +1,7 @@
+import { InjectionScope } from './injection-scope.type'
+
 export interface InjectionTokenConfig {
   name?: string
-  scope?: any
+  scope?: InjectionScope
   factory?: () => any
 }
