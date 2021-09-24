@@ -20,7 +20,7 @@ Mark classes as injectable entities with the `@Injectable` decorator. If your cl
 @Syringe.Injectable({
   scope: 'global'
 })
-export class MyService {
+export class MyService implements IService {
   // ...
 }
 ```
@@ -77,7 +77,28 @@ const app = Syringe.inject<MyApp>(MyApp)
 app.start()
 ```
 
+### Lifecycles
+There are two main lifecycle hooks available to all entities managed by `Syringe`: `OnInit` and `OnDestroy`. `Syringe`'s container will automatically call these methods if implemented during construction and teardown.
+
+To hook into these lifecycles, implement the interfaces `Syringe.OnInit` and/or `Syringe.OnDestroy`.
+
+```typescript
+@Syringe.Injectable()
+export class MyLifecycleClass implements Syringe.OnInit, Syringe.OnDestroy {
+  public onInit(): void {
+    // ...
+  }
+  public onDestroy(): void {
+    // ...
+  }
+}
+```
+
 ## Credits and Other Considerations
 This library is largely inspired by Google Angular's DI framework. Admittedly, I didn't read much (or any) of their source code because I'm familiar enough with Angular that I know their custom module pattern is too deeply engrained in that code for it to serve as a great example for my implementation.
 
 I moreso wrote the code with Angular DI's overall _feel_ in mind. While they make use of `relfect-metadata` and other methods to remove the need to decorate constructor arguments, I chose to leverage only TypeScript and JavaScript in my code.
+
+I also didn't want to use the paradigm of automatically detecting which instance to inject based on constructor argument type because that makes it harder to create abstraction layers. Decorating each argument with the target concretion for injection allows the instance property itself to be typed as an _abstraction_.
+
+The main drawback in this library, currently, is that it's impossible to inject a concretion that extends another concretion without actually instantiating the parent. This makes it difficult to create mock services by _extending_ existing concretions.
