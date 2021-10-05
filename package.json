@@ -8,7 +8,8 @@
     "pack": "npm pack ./dist",
     "start:publish": "npm publish --access=public --scope=@kuroi",
     "test:publish": "npm publish --access=public --scope=@kuroi --dry-run",
-    "test": "ts-node tests/test.ts"
+    "test": "ts-node tests/test.ts",
+    "test:isolate": "ts-node tests/isolated-test.ts"
   },
   "keywords": [
     "di",
