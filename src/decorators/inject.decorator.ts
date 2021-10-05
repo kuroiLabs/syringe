@@ -21,6 +21,5 @@ export function Inject(_token: InjectionToken | Function) {
       throw new NullInjectionTokenError('Invalid injection token for ' + _token.name)
     }
     Container.addDependency(_target, _injectionToken, _index)
-    return Container.inject(_token.name, _injectionToken.scope || _target)
   }
 }
