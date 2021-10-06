@@ -1,10 +1,10 @@
 {
   "name": "@kuroi/syringe",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TypeScript dependency injection framework",
   "main": "index.js",
   "scripts": {
-    "build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json",
+    "build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json && shx cp README.md dist/README.md",
     "pack": "npm pack ./dist",
     "start:publish": "npm publish dist --access=public --scope=@kuroi",
     "test:publish": "npm publish dist --access=public --scope=@kuroi --dry-run",
