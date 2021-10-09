@@ -4,60 +4,58 @@ import { CircularDependencyError, NullInjectionTokenError } from '../utils'
 export namespace Container {
 
   //#region maps and caches
-  const InjectionTokens = new Map<string, InjectionToken>() // token name -> token
-  const DependencyMap = new Map<string, string[]>() // token name -> dependency names
-  const CachedInstances = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
+  const TOKENS = new Map<string, InjectionToken>() // token name -> token
+  const DEPENDENCY_MAP = new Map<string, string[]>() // token name -> dependency names
+  const INSTANCES = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
   //#endregion
 
   //#region public functions
   export function registerToken(_token: InjectionToken): void {
-    InjectionTokens.set(_token.name, _token)
+    TOKENS.set(_token.name, _token)
   }
 
   export function inject<T = any>(_key: string | Function, _scope?: InjectionScope): T {
     _key = _extractEntityName(_key)
     const _token: InjectionToken = getToken(_key)
-    if (_token) {
-      _scope = _scope || _token.scope || _token.factory()
-      return _generate(_scope, _token) as T
-    }
-    throw new NullInjectionTokenError(_key)
+    _scope = _scope || _token.scope || _token.factory()
+    return _generate(_scope, _token) as T
   }
 
   export function addDependency(_client: Object, _token: InjectionToken, _index: number): void {
-    if (!DependencyMap.has(_client['name'])) {
-      DependencyMap.set(_client['name'], [])
+    if (!DEPENDENCY_MAP.has(_client['name'])) {
+      DEPENDENCY_MAP.set(_client['name'], [])
     }
-    const _dependencies: string[] = DependencyMap.get(_client['name'])
-    if (!_dependencies[_index]) {
-      _dependencies[_index] = _token.name
-    }
+    const _dependencies: string[] = DEPENDENCY_MAP.get(_client['name'])
+    _dependencies[_index] = _token.name
   }
 
   export function getToken(_key: Function | string): InjectionToken {
     _key = _extractEntityName(_key)
-    const _token: InjectionToken = InjectionTokens.get(_key)
-    if (_token) {
-      return _token
+    const _token: InjectionToken = TOKENS.get(_key)
+    if (!_token) {
+      throw new NullInjectionTokenError(_key)
     }
-    throw new NullInjectionTokenError(_key)
+    return _token
   }
 
   export function destroyInstance(_scope: InjectionScope, _token: InjectionToken): void {
-    const _instanceMap: Map<InjectionToken, any> = CachedInstances.get(_scope)
+    const _instanceMap: Map<InjectionToken, any> = INSTANCES.get(_scope)
     if (_instanceMap) {
       const _instance: any = _instanceMap.get(_token)
-      if (_instance && _instance.onDestroy) {
+      if (
+        _instance &&
+        _instance.onDestroy &&
+        typeof _instance.onDestroy === 'function'
+      ) {
         _instance.onDestroy()
       }
       _instanceMap.delete(_token)
       if (!_instanceMap.size) {
-        CachedInstances.delete(_scope)
+        INSTANCES.delete(_scope)
       }
       const _factory: any = _token.factory()
-      const _hasScopedDependencies: boolean = CachedInstances.has(_factory)
-      if (_hasScopedDependencies) {
-        CachedInstances.get(_factory).forEach((_instance, _token) => {
+      if (INSTANCES.has(_factory)) {
+        INSTANCES.get(_factory).forEach((_instance, _token) => {
           destroyInstance(_factory, _token)
         })
       }
@@ -65,8 +63,8 @@ export namespace Container {
   }
 
   export function destroyAllInstances(): void {
-    CachedInstances.forEach((_instanceMap, _scope) =>
-      _instanceMap.forEach((_, _token) =>
+    INSTANCES.forEach((_instanceMap: Map<InjectionToken, any>, _scope: InjectionScope) =>
+      _instanceMap.forEach((_, _token: InjectionToken) =>
         destroyInstance(_scope, _token)
       )
     )
@@ -82,7 +80,11 @@ export namespace Container {
     _checkForCircularDependency(_token)
     const _dependencies: any[] = _generateDependencies(_scope, _token)
     const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
-    if (_instance.onInit) {
+    if (
+      _instance &&
+      _instance.onInit &&
+      typeof _instance.onInit === 'function'
+    ) {
       _instance.onInit()
     }
     _cacheInstance(_scope, _token, _instance)
@@ -90,8 +92,8 @@ export namespace Container {
   }
 
   function _getCachedInstance(_scope: InjectionScope, _token: InjectionToken): any | null {
-    if (CachedInstances.has(_scope)) {
-      return CachedInstances.get(_scope).get(_token) || null
+    if (INSTANCES.has(_scope)) {
+      return INSTANCES.get(_scope).get(_token) || null
     }
     return null
   }
@@ -100,16 +102,16 @@ export namespace Container {
     if (!_scope) {
       console.warn('Undefined scope for ' + _token.name)
     }
-    if (!CachedInstances.has(_scope)) {
-      CachedInstances.set(_scope, new Map())
+    if (!INSTANCES.has(_scope)) {
+      INSTANCES.set(_scope, new Map())
     }
-    CachedInstances.get(_scope).set(_token, _instance)
+    INSTANCES.get(_scope).set(_token, _instance)
   }
 
   function _generateDependencies(_scope: InjectionScope, _token: InjectionToken): any[] {
-    const _dependencies: any[] = DependencyMap.get(_token.name) || [] 
+    const _dependencies: string[] = DEPENDENCY_MAP.get(_token.name) || [] 
     return _dependencies.map(
-      _dependencyName => {
+      (_dependencyName: string) => {
         const _dependencyToken: InjectionToken = getToken(_dependencyName)
         return _generate(
           _dependencyToken.scope || _token.factory(),
@@ -129,15 +131,15 @@ export namespace Container {
   }
 
   function _checkForCircularDependency(_token: InjectionToken): void {
-    const _dependencies: string[] = DependencyMap.get(_token.name)
+    const _dependencies: string[] = DEPENDENCY_MAP.get(_token.name)
     if (!_dependencies || !_dependencies.length) {
       return
     }
-    for (let i = 0; i < _dependencies.length; i ++) {
+    for (let i = 0; i < _dependencies.length; i++) {
       if (_dependencies[i] === _token.name) {
         throw new CircularDependencyError(`${_token.name} lists itself as a dependency!`)
       }
-      const _nestedDependencies: string[] = DependencyMap.get(_dependencies[i])
+      const _nestedDependencies: string[] = DEPENDENCY_MAP.get(_dependencies[i])
       if (_nestedDependencies) {
         if (_nestedDependencies.indexOf(_token.name) > -1) {
           throw new CircularDependencyError(`${_token.name} -> ${_dependencies[i]} -> ${_token.name}`)
