@@ -1,9 +1,8 @@
 import { Container } from '../container'
 import { InjectionToken } from '../injection-token'
-import { CircularDependencyError } from '../utils'
 
 /**
- * @description Decorates injected constructor parameters
+ * @description Decorates injected constructor parameters to register dependencies
  */
 export function Inject(_token: InjectionToken | Function) {
   return function _injectDecorator(
@@ -12,9 +11,7 @@ export function Inject(_token: InjectionToken | Function) {
     _index: number
   ) {
     if (!_token) {
-      throw new CircularDependencyError(
-        `${_target['name']} requested an InjectionToken (index [${_index}]) before it was initialized`
-      )
+      throw new ReferenceError(`${_target['name']} requested an InjectionToken (index [${_index}]) before it was initialized`)
     }
     const _injectionToken: InjectionToken = Container.getToken(_token.name)
     Container.addDependency(_target, _injectionToken, _index)
