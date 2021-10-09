@@ -1,6 +1,6 @@
 import { Container } from '../container'
 import { InjectionToken } from '../injection-token'
-import { CircularDependencyError, NullInjectionTokenError } from '../utils'
+import { CircularDependencyError } from '../utils'
 
 /**
  * @description Decorates injected constructor parameters
@@ -17,9 +17,6 @@ export function Inject(_token: InjectionToken | Function) {
       )
     }
     const _injectionToken: InjectionToken = Container.getToken(_token.name)
-    if (!_injectionToken) {
-      throw new NullInjectionTokenError(_token.name)
-    }
     Container.addDependency(_target, _injectionToken, _index)
   }
 }
