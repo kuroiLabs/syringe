@@ -18,7 +18,7 @@ export function Inject(_token: InjectionToken | Function) {
     }
     const _injectionToken: InjectionToken = Container.getToken(_token.name)
     if (!_injectionToken) {
-      throw new NullInjectionTokenError('Invalid injection token for ' + _token.name)
+      throw new NullInjectionTokenError(_token.name)
     }
     Container.addDependency(_target, _injectionToken, _index)
   }
