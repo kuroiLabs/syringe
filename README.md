@@ -45,13 +45,18 @@ export class MyComponent {
 ```
 
 ### Creating Injection Tokens
-Sometimes, you might want to inject a constants or other non-class entities into your `@Injectable` class. In order to do this, you must manually construct an `InjectionToken` and return your value from its `factory` function.
+Sometimes, you might want to inject constants, function calls, or other non-class entities into your `@Injectable` class. In order to do this, you must manually construct an `InjectionToken` and return your value from its `factory` function.
 
 ```typescript
 const _someConstant: string = 'Jerry, hello! It\'s me, Uncle Leo!'
 export const UNCLE_LEO = new InjectionToken('UncleLeo', {
   scope: 'global',
   factory: () => _someConstant
+})
+
+const GENERATE_ID = new InjectionToken('GenerateId', {
+  scope: 'global',
+  factory: () => Utilities.generateId()
 })
 ```
 
@@ -60,7 +65,10 @@ Then, you can inject this token directly into an `@Injectable` class.
 ```typescript
 @Syringe.Injectable()
 export class MyClass {
-  constructor(@Syringe.Inject(UNCLE_LEO) private greeting: string) {
+  constructor(
+    @Syringe.Inject(GENERATE_ID) public id: string,
+    @Syringe.Inject(UNCLE_LEO) private greeting: string
+  ) {
 
   }
   public greet(): void {
@@ -97,6 +105,6 @@ export class MyLifecycleClass implements Syringe.OnInit, Syringe.OnDestroy {
 ## Credits and Other Considerations
 This library is largely inspired by Google Angular's DI framework. Admittedly, I didn't read much (or any) of their source code because I'm familiar enough with Angular that I know their custom module pattern is too deeply engrained in that code for it to serve as a great example for my implementation.
 
-I moreso wrote the code with Angular DI's overall _feel_ in mind. While they make use of `relfect-metadata` and other methods to remove the need to decorate constructor arguments, I chose to leverage only TypeScript and JavaScript in my code.
+I moreso wrote the code with Angular DI's overall _feel_ in mind. While they make use of `reflect-metadata` and other methods to remove the need to decorate constructor arguments, I chose to leverage only TypeScript and JavaScript in my code.
 
 I also didn't want to use the paradigm of automatically detecting which instance to inject based on constructor argument type because that makes it harder to create abstraction layers. Decorating each argument with the target concretion for injection allows the instance property itself to be typed as an _abstraction_.
