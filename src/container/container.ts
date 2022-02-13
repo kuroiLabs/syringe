@@ -17,7 +17,7 @@ export namespace Container {
   export function inject<T = any>(_key: string | Function, _scope?: InjectionScope): T {
     _key = _extractEntityName(_key)
     const _token: InjectionToken = getToken(_key)
-    _scope = _scope || _token.scope || _token.factory()
+    _scope = _scope || _token.scope || _token.factory
     return _generate(_scope, _token) as T
   }
 
@@ -53,7 +53,7 @@ export namespace Container {
       if (!_instanceMap.size) {
         INSTANCES.delete(_scope)
       }
-      const _factory: any = _token.factory()
+      const _factory: any = _token.factory
       if (INSTANCES.has(_factory)) {
         INSTANCES.get(_factory).forEach((_instance, _token) => {
           destroyInstance(_factory, _token)
@@ -114,7 +114,7 @@ export namespace Container {
       (_dependencyName: string) => {
         const _dependencyToken: InjectionToken = getToken(_dependencyName)
         return _generate(
-          _dependencyToken.scope || _token.factory(),
+          _dependencyToken.scope || _token.factory,
           _dependencyToken
         )
       }
