@@ -1,5 +1,6 @@
 import { InjectionToken } from '../injection-token/injection-token'
 import { InjectionTokenConfig } from '../injection-token/injection-token-config.interface'
+import { Constructor } from '../utils'
 
 /**
  * @description Decorates a class as an injectable entity, generates an InjectionToken,
@@ -7,13 +8,16 @@ import { InjectionTokenConfig } from '../injection-token/injection-token-config.
  * @see InjectionToken
  * @see Container
  */
-export const Injectable = (_token?: InjectionTokenConfig) => {
-  return function _injectableDecorator(_constructor: Function) {
-    const _key: string = _token && _token.name || _constructor.name
-    new InjectionToken(_key, {
-      name: _key,
-      scope: _token && _token.scope,
-      factory: () => _constructor
-    })
-  }
+export function Injectable<T extends Constructor>(_token?: InjectionTokenConfig) {
+	return function _injectableDecorator(Class: T) {
+		class Injected extends Class { }
+		const _key: string = _token && _token.name || Class.name
+		Object.defineProperty(Injected, "name", { value:  _key })
+		new InjectionToken(_key, {
+			name: _key,
+			scope: _token && _token.scope,
+			factory: () => Injected
+		})
+		return Injected;
+	}
 }
