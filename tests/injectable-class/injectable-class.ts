@@ -1,8 +1,10 @@
 import { Syringe } from '../../src'
+import { Extra } from '../decorator'
 import { HELLO } from '../message'
 
 // non-singleton, scoped injectable
 @Syringe.Injectable()
+@Extra
 export class InjectableClass implements Syringe.OnInit, Syringe.OnDestroy {
 
   private id: string

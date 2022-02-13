@@ -1,9 +1,11 @@
 import { Syringe } from '../../src'
+import { Extra } from '../decorator'
 import { Service } from '../test-service'
 
 @Syringe.Injectable({
   scope: 'global'
 })
+@Extra
 export class TestApp implements Syringe.OnInit {
 
   private id: string

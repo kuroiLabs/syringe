@@ -1,9 +1,11 @@
 import { Syringe } from "../../src";
+import { Extra } from "../decorator";
 import { InjectableClass } from "../injectable-class";
 
 @Syringe.Injectable({
   scope: 'global'
 })
+@Extra
 export class OtherService implements Syringe.OnInit, Syringe.OnDestroy {
 
   private id: string
