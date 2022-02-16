@@ -16,7 +16,6 @@ export function Inject(_token: InjectionToken | Function | string) {
 		}
 		const _injectionKey: any = (typeof _token === "string") ? _token :
 			(typeof _token === "function" ? _token.name : _token.key)
-		const _injectionToken: InjectionToken = Container.getToken(_injectionKey)
-		Container.addDependency(_target, _injectionToken, _index)
+		Container.addDependency(_target, _injectionKey, _index)
 	}
 }
