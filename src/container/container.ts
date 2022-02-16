@@ -7,7 +7,7 @@ export namespace Container {
 	const TOKENS = new Map<string, InjectionToken>() // token key -> token
 	const DEPENDENCY_MAP = new Map<string, string[]>() // token identifier -> dependency names
 	const INSTANCES = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
-	const PROVIDERS = new Map<any, any>()
+	const PROVIDERS = new Map<string, string>()
 	//#endregion
 
 	//#region public functions
