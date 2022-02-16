@@ -10,14 +10,9 @@ import { Constructor } from '../utils'
  */
 export function Injectable<T extends Constructor>(_token?: InjectionTokenConfig) {
 	return function _injectableDecorator(Class: T) {
-		class Injected extends Class { }
-		const _key: string = _token && _token.name || Class.name
-		Object.defineProperty(Injected, "name", { value:  _key })
-		new InjectionToken(_key, {
-			name: _key,
+		new InjectionToken(Class.name, {
 			scope: _token && _token.scope,
-			factory: () => Injected
+			factory: () => Class
 		})
-		return Injected;
 	}
 }
