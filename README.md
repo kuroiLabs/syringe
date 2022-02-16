@@ -35,9 +35,7 @@ export class MyInstance {
 
 **Note**: The `@Injectable` decorator will not work alongside class decorators that wrap the target class in an *anonymous extending class*. If your decorator returns a `Proxy` to the target constructor or manually preserves the prototype information (particularly the `name`), `Syringe` DI should still work, but it's advised that you put the `@Injectable` decorator *first*.
 ```typescript
-@Syringe.Injectable({
-	name: "MultiDecorated"
-})
+@Syringe.Injectable()
 @Wrapper
 export class MultiDecorated {
 	// ...
