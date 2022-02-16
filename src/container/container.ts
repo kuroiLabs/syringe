@@ -121,9 +121,9 @@ export namespace Container {
 	}
 
 	function _processTokenFactory(_factory: Constructor<any> | any, _dependencies: any[]): any {
-		if (_isConstructor(_factory)) {
+		if (_isConstructor(_factory))
 			return Reflect.construct(_factory, _dependencies)
-		}
+
 		return _factory
 	}
 
