@@ -15,8 +15,6 @@ import { Syringe } from '@kuroi/syringe'
 ### Creating Injectable Classes
 Mark classes as injectable entities with the `@Injectable` decorator. If your class is a singleton, provide a scope of `'global'`, otherwise leave the decorator argument blank to allow `Syringe` to construct a new instance for each injection.
 
-**Note**: When chaining class decorators with Syringe, use `@Injectable` *first*, especially if the other decorators return anonymous class wrappers.
-
 #### Singleton
 ```typescript
 @Syringe.Injectable({
@@ -32,6 +30,17 @@ export class MyService implements IService {
 @Syringe.Injectable()
 export class MyInstance {
   // ...
+}
+```
+
+**Note**: The `@Injectable` decorator will not work alongside class decorators that wrap the target class in an *anonymous extending class*. If your decorator returns a `Proxy` to the target constructor or manually preserves the prototype information (particularly the `name`), `Syringe` DI should still work, but it's advised that you put the `@Injectable` decorator *first*.
+```typescript
+@Syringe.Injectable({
+	name: "MultiDecorated"
+})
+@Wrapper
+export class MultiDecorated {
+	// ...
 }
 ```
 
