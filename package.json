@@ -1,6 +1,6 @@
 {
   "name": "@kuroi/syringe",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "TypeScript dependency injection framework",
   "main": "index.js",
   "scripts": {
