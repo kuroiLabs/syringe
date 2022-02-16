@@ -88,13 +88,8 @@ export namespace Container {
 		_checkForCircularDependency(_token)
 		const _dependencies: any[] = _generateDependencies(_scope, _token)
 		const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
-		if (
-			_instance &&
-			_instance.onInit &&
-			typeof _instance.onInit === "function"
-		) {
+		if (_instance?.onInit && typeof _instance.onInit === "function")
 			_instance.onInit()
-		}
 		_cacheInstance(_scope, _token, _instance)
 		return _instance
 	}
@@ -146,14 +141,12 @@ export namespace Container {
 			return
 		}
 		for (let i = 0; i < _dependencies.length; i++) {
-			if (_dependencies[i] === _token.key) {
+			if (_dependencies[i] === _token.key)
 				throw new CircularDependencyError(`${_token.key} lists itself as a dependency!`)
-			}
 			const _nestedDependencies: any[] = DEPENDENCY_MAP.get(_dependencies[i])
 			if (_nestedDependencies) {
-				if (_nestedDependencies.indexOf(_token.key) > -1) {
+				if (_nestedDependencies.indexOf(_token.key) > -1)
 					throw new CircularDependencyError(`${_token.key} -> ${_dependencies[i]} -> ${_token.key}`)
-				}
 			}
 		}
 	}
