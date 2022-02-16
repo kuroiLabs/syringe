@@ -1,3 +1,3 @@
 export interface OnDestroy {
-  onDestroy(): void
+	onDestroy(): void
 }

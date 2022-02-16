@@ -1,5 +1,5 @@
 export namespace Constants {
 
-  export const GLOBAL_SCOPE: string = 'global'
+	export const GLOBAL_SCOPE: string = 'global'
 
 }
