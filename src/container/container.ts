@@ -27,9 +27,8 @@ export namespace Container {
 	}
 
 	export function addDependency(_client: Constructor, _dependency: string, _index: number): void {
-		if (!DEPENDENCY_MAP.has(_client.name)) {
+		if (!DEPENDENCY_MAP.has(_client.name))
 			DEPENDENCY_MAP.set(_client.name, [])
-		}
 		const _dependencies: string[] = DEPENDENCY_MAP.get(_client.name)
 		_dependencies[_index] = _dependency
 	}
@@ -38,8 +37,7 @@ export namespace Container {
 		_key = _extractEntityName(_key)
 		if (PROVIDERS.has(_key))
 			_key = PROVIDERS.get(_key)
-
-			const _token: InjectionToken = TOKENS.get(_key)
+		const _token: InjectionToken = TOKENS.get(_key)
 		if (!_token)
 			throw new NullInjectionTokenError(_key)
 		
@@ -85,9 +83,8 @@ export namespace Container {
 	//#region private functions
 	function _generate(_scope: InjectionScope, _token: InjectionToken): any {
 		const _cachedInstance: any = _getCachedInstance(_scope, _token)
-		if (_cachedInstance) {
+		if (_cachedInstance)
 			return _cachedInstance
-		}
 		_checkForCircularDependency(_token)
 		const _dependencies: any[] = _generateDependencies(_scope, _token)
 		const _instance: any = _processTokenFactory(_token.factory(), _dependencies)
