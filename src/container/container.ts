@@ -1,5 +1,5 @@
-import { InjectionScope, InjectionToken } from '../injection-token'
-import { CircularDependencyError, Constructor, NullInjectionTokenError } from '../utils'
+import { InjectionScope, InjectionToken } from "../injection-token"
+import { CircularDependencyError, Constructor, IProvider, NullInjectionTokenError } from "../utils"
 
 export namespace Container {
 
@@ -7,6 +7,7 @@ export namespace Container {
 	const TOKENS = new Map<string, InjectionToken>() // token key -> token
 	const DEPENDENCY_MAP = new Map<string, string[]>() // token identifier -> dependency names
 	const INSTANCES = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
+	const PROVIDERS = new Map<any, any>()
 	//#endregion
 
 	//#region public functions
@@ -14,28 +15,39 @@ export namespace Container {
 		TOKENS.set(_token.key, _token)
 	}
 
-	export function inject<T = any>(_key: string | Function, _scope?: InjectionScope): T {
-		_key = _extractEntityName(_key);
+	export function inject<T = any>(_key: string | Function, _scope?: InjectionScope, _providers?: IProvider[]): T {
+		// register providers before doing anything
+		if (_providers)
+			_providers.forEach(_provider => provide(_provider))
+
+		_key = _extractEntityName(_key)
 		const _token: InjectionToken = getToken(_key)
 		_scope = _scope || _token.scope || _token.factory
 		return _generate(_scope, _token) as T
 	}
 
-	export function addDependency(_client: Constructor, _token: InjectionToken, _index: number): void {
+	export function addDependency(_client: Constructor, _dependency: string, _index: number): void {
 		if (!DEPENDENCY_MAP.has(_client.name)) {
 			DEPENDENCY_MAP.set(_client.name, [])
 		}
 		const _dependencies: string[] = DEPENDENCY_MAP.get(_client.name)
-		_dependencies[_index] = _token.key
+		_dependencies[_index] = _dependency
 	}
 
 	export function getToken(_key: any): InjectionToken {
 		_key = _extractEntityName(_key)
-		const _token: InjectionToken = TOKENS.get(_key)
+		if (PROVIDERS.has(_key))
+			_key = PROVIDERS.get(_key)
+
+			const _token: InjectionToken = TOKENS.get(_key)
 		if (!_token)
-			throw new NullInjectionTokenError(_extractEntityName(_key))
+			throw new NullInjectionTokenError(_key)
 		
 		return _token
+	}
+
+	export function provide(_provider: IProvider): void {
+		PROVIDERS.set(_extractEntityName(_provider.for), _extractEntityName(_provider.use))
 	}
 
 	export function destroyInstance(_scope: InjectionScope, _token: InjectionToken): void {
@@ -45,7 +57,7 @@ export namespace Container {
 			if (
 				_instance &&
 				_instance.onDestroy &&
-				typeof _instance.onDestroy === 'function'
+				typeof _instance.onDestroy === "function"
 			) {
 				_instance.onDestroy()
 			}
@@ -82,7 +94,7 @@ export namespace Container {
 		if (
 			_instance &&
 			_instance.onInit &&
-			typeof _instance.onInit === 'function'
+			typeof _instance.onInit === "function"
 		) {
 			_instance.onInit()
 		}
@@ -91,19 +103,19 @@ export namespace Container {
 	}
 
 	function _getCachedInstance(_scope: InjectionScope, _token: InjectionToken): any | null {
-		if (INSTANCES.has(_scope)) {
+		if (INSTANCES.has(_scope))
 			return INSTANCES.get(_scope).get(_token) || null
-		}
+
 		return null
 	}
 
 	function _cacheInstance(_scope: InjectionScope, _token: InjectionToken, _instance: any): void {
-		if (!_scope) {
-			console.warn('Undefined scope for ' + _token.key)
-		}
-		if (!INSTANCES.has(_scope)) {
+		if (!_scope)
+			console.warn("Undefined scope for " + _token.key)
+
+		if (!INSTANCES.has(_scope))
 			INSTANCES.set(_scope, new Map())
-		}
+		
 		INSTANCES.get(_scope).set(_token, _instance)
 	}
 
@@ -150,14 +162,14 @@ export namespace Container {
 	}
 
 	function _extractEntityName(_entity: Function | string | any): string {
-		if (typeof _entity === 'function') {
+		if (typeof _entity === "function") {
 			return _entity.name
 		}
-		if (typeof _entity === 'string') {
+		if (typeof _entity === "string") {
 			return _entity
 		}
 		if (_entity.name) {
-			return _entity.name;
+			return _entity.name
 		}
 	}
 	//#endregion
