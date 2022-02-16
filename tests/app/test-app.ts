@@ -1,7 +1,7 @@
 import { Syringe } from "../../src"
 import { Extra } from "../decorator"
 import { GENERATE_ID } from "../generator"
-import { Service } from "../test-service"
+import { BaseTestService } from "../test-service"
 
 @Syringe.Injectable({
 	scope: "global"
@@ -12,7 +12,7 @@ export class TestApp implements Syringe.OnInit {
 	private id: string
 
 	constructor(
-		@Syringe.Inject(Service) public service: Service,
+		@Syringe.Inject(BaseTestService) public service: BaseTestService,
 		@Syringe.Inject(GENERATE_ID) _generator: () => string
 	) {
 		this.id = _generator()
