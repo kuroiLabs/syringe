@@ -121,10 +121,14 @@ export namespace Container {
 	}
 
 	function _processTokenFactory(_factory: Constructor<any> | any, _dependencies: any[]): any {
-		if (_factory instanceof Function) {
-			return Reflect.construct(_factory, _dependencies);
+		if (_isConstructor(_factory)) {
+			return Reflect.construct(_factory, _dependencies)
 		}
 		return _factory
+	}
+
+	function _isConstructor(_factory: any): boolean {
+		return !!_factory.prototype?.constructor
 	}
 
 	function _checkForCircularDependency(_token: InjectionToken): void {
