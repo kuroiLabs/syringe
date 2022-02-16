@@ -63,9 +63,10 @@ export const UNCLE_LEO = new InjectionToken('UncleLeo', {
   factory: () => _someConstant
 })
 
+// inject an ID generator function
 const GENERATE_ID = new InjectionToken('GenerateId', {
   scope: 'global',
-  factory: () => Utilities.generateId()
+  factory: () => () => Utilities.generateId()
 })
 ```
 
@@ -74,11 +75,12 @@ Then, you can inject this token directly into an `@Injectable` class.
 ```typescript
 @Syringe.Injectable()
 export class MyClass {
+  public id: string;
   constructor(
-    @Syringe.Inject(GENERATE_ID) public id: string,
+    @Syringe.Inject(GENERATE_ID) idGenerator: () => string,
     @Syringe.Inject(UNCLE_LEO) private greeting: string
   ) {
-
+    this.id = idGenerator()
   }
   public greet(): void {
     console.log(this.greeting) // Jerry, hello! It's me, Uncle Leo!
@@ -92,6 +94,25 @@ To get all of your classes actually running, simply tell `Syringe` to inject the
 ```typescript
 const app = Syringe.inject<MyApp>(MyApp)
 app.start()
+```
+
+#### Providers
+Sometimes, you may want to inject an `abstract` class and specify a concretion at a higher level context, or just substitute one implementation for another. Such is the beauty of dependency injection.
+
+To do so, simply include a provider in the arguments to `Syringe.inject` when bootstrapping an entry point to your application.
+```typescript
+// inject Abstraction
+@Syringe.Injectable()
+export class MyClass {
+  constructor(@Syringe.Inject(AbstractService) service: AbstractService) {}
+}
+
+const app = Syringe.inject<MyApp>(MyApp, {
+  providers: [{
+    use: ConcreteService,
+    for: AbstractService
+  }]
+})
 ```
 
 ### Lifecycles
