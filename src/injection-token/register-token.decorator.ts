@@ -6,10 +6,11 @@ import { Constructor } from '../utils'
  *  after the fact in order to auto-register the token after creation
  */
 export function RegisterToken<T extends Constructor>(Class: T) {
-	return class extends Class {
-		constructor(...args: any[]) {
-			super(...args)
-			Container.registerToken(<any>this)
+	return new Proxy(Class, {
+		construct(_class: T, _args: any[]) {
+			const _token = Reflect.construct(_class, _args);
+			Container.registerToken(<any>_token);
+			return _token;
 		}
-	}
+	})
 }
