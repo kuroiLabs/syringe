@@ -15,7 +15,7 @@ export namespace Container {
 		TOKENS.set(_token.key, _token)
 	}
 
-	export function inject<T = any>(_key: string | Function, _scope?: InjectionScope, _providers?: IProvider[]): T {
+	export function inject<T = any>(_key: any, _scope?: InjectionScope, _providers?: IProvider[]): T {
 		// register providers before doing anything
 		if (_providers)
 			_providers.forEach(_provider => provide(_provider))
