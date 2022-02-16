@@ -1,12 +1,27 @@
 import { InjectionScope, InjectionToken } from "../injection-token"
-import { CircularDependencyError, Constructor, IProvider, NullInjectionTokenError } from "../utils"
+import { CircularDependencyError, Constructor, NullInjectionTokenError } from "../utils"
 
 export namespace Container {
 
+	//#region types
+	export interface Provider {
+		use: any,
+		for: any
+	}
+
+	export interface InjectionModule {
+		scope?: InjectionScope,
+		providers?: Provider[]
+	}
+	//#endregion
+
 	//#region maps and caches
 	const TOKENS = new Map<string, InjectionToken>() // token key -> token
+
 	const DEPENDENCY_MAP = new Map<string, string[]>() // token identifier -> dependency names
+
 	const INSTANCES = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
+
 	const PROVIDERS = new Map<string, string>()
 	//#endregion
 
@@ -15,14 +30,14 @@ export namespace Container {
 		TOKENS.set(_token.key, _token)
 	}
 
-	export function inject<T = any>(_key: any, _scope?: InjectionScope, _providers?: IProvider[]): T {
+	export function inject<T = any>(_key: any, _moduleConfig: InjectionModule): T {
 		// register providers before doing anything
-		if (_providers)
-			_providers.forEach(_provider => provide(_provider))
+		if (_moduleConfig && _moduleConfig.providers)
+			_moduleConfig.providers.forEach(_provider => provide(_provider))
 
 		_key = _extractEntityName(_key)
 		const _token: InjectionToken = getToken(_key)
-		_scope = _scope || _token.scope || _token.factory
+		const _scope = _moduleConfig?.scope || _token.scope || _token.factory
 		return _generate(_scope, _token) as T
 	}
 
@@ -44,7 +59,7 @@ export namespace Container {
 		return _token
 	}
 
-	export function provide(_provider: IProvider): void {
+	export function provide(_provider: Provider): void {
 		PROVIDERS.set(_extractEntityName(_provider.for), _extractEntityName(_provider.use))
 	}
 
