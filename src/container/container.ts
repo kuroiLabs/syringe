@@ -1,40 +1,40 @@
 import { InjectionScope, InjectionToken } from '../injection-token'
-import { CircularDependencyError, NullInjectionTokenError } from '../utils'
+import { CircularDependencyError, Constructor, NullInjectionTokenError } from '../utils'
 
 export namespace Container {
 
 	//#region maps and caches
-	const TOKENS = new Map<string, InjectionToken>() // token name -> token
-	const DEPENDENCY_MAP = new Map<string, string[]>() // token name -> dependency names
+	const TOKENS = new Map<string, InjectionToken>() // token key -> token
+	const DEPENDENCY_MAP = new Map<string, string[]>() // token identifier -> dependency names
 	const INSTANCES = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -> token ID -> cached instance
 	//#endregion
 
 	//#region public functions
 	export function registerToken(_token: InjectionToken): void {
-		TOKENS.set(_token.name, _token)
+		TOKENS.set(_token.key, _token)
 	}
 
 	export function inject<T = any>(_key: string | Function, _scope?: InjectionScope): T {
-		_key = _extractEntityName(_key)
+		_key = _extractEntityName(_key);
 		const _token: InjectionToken = getToken(_key)
 		_scope = _scope || _token.scope || _token.factory
 		return _generate(_scope, _token) as T
 	}
 
-	export function addDependency(_client: Object, _token: InjectionToken, _index: number): void {
-		if (!DEPENDENCY_MAP.has(_client['name'])) {
-			DEPENDENCY_MAP.set(_client['name'], [])
+	export function addDependency(_client: Constructor, _token: InjectionToken, _index: number): void {
+		if (!DEPENDENCY_MAP.has(_client.name)) {
+			DEPENDENCY_MAP.set(_client.name, [])
 		}
-		const _dependencies: string[] = DEPENDENCY_MAP.get(_client['name'])
-		_dependencies[_index] = _token.name
+		const _dependencies: string[] = DEPENDENCY_MAP.get(_client.name)
+		_dependencies[_index] = _token.key
 	}
 
-	export function getToken(_key: Function | string): InjectionToken {
+	export function getToken(_key: any): InjectionToken {
 		_key = _extractEntityName(_key)
 		const _token: InjectionToken = TOKENS.get(_key)
-		if (!_token) {
-			throw new NullInjectionTokenError(_key)
-		}
+		if (!_token)
+			throw new NullInjectionTokenError(_extractEntityName(_key))
+		
 		return _token
 	}
 
@@ -50,9 +50,8 @@ export namespace Container {
 				_instance.onDestroy()
 			}
 			_instanceMap.delete(_token)
-			if (!_instanceMap.size) {
+			if (!_instanceMap.size)
 				INSTANCES.delete(_scope)
-			}
 			const _factory: any = _token.factory
 			if (INSTANCES.has(_factory)) {
 				INSTANCES.get(_factory).forEach((_instance, _token) => {
@@ -100,7 +99,7 @@ export namespace Container {
 
 	function _cacheInstance(_scope: InjectionScope, _token: InjectionToken, _instance: any): void {
 		if (!_scope) {
-			console.warn('Undefined scope for ' + _token.name)
+			console.warn('Undefined scope for ' + _token.key)
 		}
 		if (!INSTANCES.has(_scope)) {
 			INSTANCES.set(_scope, new Map())
@@ -109,10 +108,10 @@ export namespace Container {
 	}
 
 	function _generateDependencies(_scope: InjectionScope, _token: InjectionToken): any[] {
-		const _dependencies: string[] = DEPENDENCY_MAP.get(_token.name) || []
+		const _dependencies: string[] = DEPENDENCY_MAP.get(_token.key) || []
 		return _dependencies.map(
-			(_dependencyName: string) => {
-				const _dependencyToken: InjectionToken = getToken(_dependencyName)
+			(_dependency: string) => {
+				const _dependencyToken: InjectionToken = getToken(_dependency)
 				return _generate(
 					_dependencyToken.scope || _token.factory,
 					_dependencyToken
@@ -121,38 +120,41 @@ export namespace Container {
 		)
 	}
 
-	function _processTokenFactory(_factory: Function | any, _dependencies: any[]): any {
-		if (typeof _factory === 'function') {
-			const _constructor: any = _factory.bind.apply(_factory, [null, ..._dependencies])
-			return new _constructor()
-		} else {
-			return _factory
+	function _processTokenFactory(_factory: Constructor<any> | any, _dependencies: any[]): any {
+		if (_factory instanceof Function) {
+			return Reflect.construct(_factory, _dependencies);
 		}
+		return _factory
 	}
 
 	function _checkForCircularDependency(_token: InjectionToken): void {
-		const _dependencies: string[] = DEPENDENCY_MAP.get(_token.name)
+		const _dependencies: any[] = DEPENDENCY_MAP.get(_token.key)
 		if (!_dependencies || !_dependencies.length) {
 			return
 		}
 		for (let i = 0; i < _dependencies.length; i++) {
-			if (_dependencies[i] === _token.name) {
-				throw new CircularDependencyError(`${_token.name} lists itself as a dependency!`)
+			if (_dependencies[i] === _token.key) {
+				throw new CircularDependencyError(`${_token.key} lists itself as a dependency!`)
 			}
-			const _nestedDependencies: string[] = DEPENDENCY_MAP.get(_dependencies[i])
+			const _nestedDependencies: any[] = DEPENDENCY_MAP.get(_dependencies[i])
 			if (_nestedDependencies) {
-				if (_nestedDependencies.indexOf(_token.name) > -1) {
-					throw new CircularDependencyError(`${_token.name} -> ${_dependencies[i]} -> ${_token.name}`)
+				if (_nestedDependencies.indexOf(_token.key) > -1) {
+					throw new CircularDependencyError(`${_token.key} -> ${_dependencies[i]} -> ${_token.key}`)
 				}
 			}
 		}
 	}
 
-	function _extractEntityName(_entity: Function | string): string {
+	function _extractEntityName(_entity: Function | string | any): string {
 		if (typeof _entity === 'function') {
 			return _entity.name
 		}
-		return _entity
+		if (typeof _entity === 'string') {
+			return _entity
+		}
+		if (_entity.name) {
+			return _entity.name;
+		}
 	}
 	//#endregion
 
