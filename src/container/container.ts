@@ -162,15 +162,17 @@ export namespace Container {
 	}
 
 	function _extractEntityName(_entity: Function | string | any): string {
-		if (typeof _entity === "function") {
+		if (_entity instanceof InjectionToken)
+			return _entity.key
+
+		if (typeof _entity === "function")
 			return _entity.name
-		}
-		if (typeof _entity === "string") {
+
+		if (typeof _entity === "string")
 			return _entity
-		}
-		if (_entity.name) {
+
+		if (_entity.name)
 			return _entity.name
-		}
 	}
 	//#endregion
 
