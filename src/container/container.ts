@@ -65,7 +65,7 @@ export function registerToken(_token: InjectionToken): void {
 export function inject<T = any>(_key: any, _moduleConfig?: InjectionModule): T {
 	// register providers
 	if (_moduleConfig?.providers)
-		_moduleConfig.providers.forEach(_provider => provide(_provider))
+		provide(_key, ..._moduleConfig.providers)
 
 	_key = _extractEntityName(_key)
 	const _token: InjectionToken = getToken(_key)
@@ -91,7 +91,7 @@ export function getToken(_key: any): InjectionToken {
 	return _token
 }
 
-export function provide(..._providers: Provider[]): void {
+export function provide(_scope: InjectionScope,..._providers: Provider[]): void {
 	_providers.forEach(_provider => {
 		const _providerKey: string = _extractEntityName(_provider.for)
 		if (_provider.use) {
@@ -101,9 +101,10 @@ export function provide(..._providers: Provider[]): void {
 				PROVIDERS.set(_providerKey, _extractEntityName(_provider.use))
 			}
 		} else if (_provider.instance) {
-			registerToken(new InjectionToken(_providerKey, {
+			new InjectionToken(_providerKey, {
+				scope: _scope || "global",
 				factory: () => _provider.instance
-			}))
+			})
 		}
 	})
 }
