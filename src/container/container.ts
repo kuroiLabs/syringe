@@ -97,10 +97,6 @@ export class InjectionToken implements InjectionToken {
 
 	public factory: () => any
 
-	get isSingleton(): boolean {
-		return this.scope === Constants.GLOBAL_SCOPE
-	}
-
 	constructor(_key: any, _config: Partial<InjectionToken>) {
 		this.id = generateId()
 		this.key = _key
