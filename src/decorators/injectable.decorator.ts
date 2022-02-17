@@ -9,7 +9,7 @@ import { Constructor } from "../utils"
  * @see InjectionToken
  * @see Container
  */
-export function Injectable<T extends Constructor>(_token?: Partial<InjectionToken>) {
+export function Injectable<T extends Constructor>(_token?: Pick<InjectionToken, "scope">) {
 	return function _injectableDecorator(Class: T) {
 		new InjectionToken(Class.name, {
 			scope: _token && _token.scope,
