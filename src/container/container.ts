@@ -63,8 +63,8 @@ export function registerToken(_token: InjectionToken): void {
 }
 
 export function inject<T = any>(_key: any, _moduleConfig?: InjectionModule): T {
-	// register providers before doing anything
-	if (_moduleConfig && _moduleConfig.providers)
+	// register providers
+	if (_moduleConfig?.providers)
 		_moduleConfig.providers.forEach(_provider => provide(_provider))
 
 	_key = _extractEntityName(_key)
