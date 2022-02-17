@@ -71,8 +71,9 @@ export class Provider implements Provider {
  */
 export interface ModuleConfiguration {
 	scope?: InjectionScope,
-	providers?: Provider[]
+	providers?: (Provider | Constructor)[]
 }
+export class ModuleConfiguration implements ModuleConfiguration {}
 
 /**
  * @author kuro <kuro@kuroi.io>
@@ -228,8 +229,13 @@ export function destroyAllInstances(): void {
 //#endregion
 
 //#region private methods
-function _provide(_scope: InjectionScope, ..._providers: Provider[]): void {
+function _provide(_scope: InjectionScope, ..._providers: Array<Provider | Constructor>): void {
 	_providers.forEach(_provider => {
+		if (_provider instanceof Provider) {
+			_provider = new Provider(_scope, _provider.for, _provider.provide)
+		} else {
+			_provider = new Provider(_scope, _provider)
+		}
 		_provider = new Provider(_scope, _provider.for, _provider.provide)
 		const _key: string = _extractEntityName(_provider.for)
 		if (_provider.provide.use) {
@@ -241,7 +247,7 @@ function _provide(_scope: InjectionScope, ..._providers: Provider[]): void {
 		} else if (_provider.provide.instance) {
 			new InjectionToken(_key, {
 				scope: _provider.scope || "global",
-				factory: () => _provider.provide.instance
+				factory: () => (<Provider>_provider).provide.instance
 			})
 		}
 	})
