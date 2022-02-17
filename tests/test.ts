@@ -8,4 +8,4 @@ Syringe.inject(TestApp, {
 		for: BaseTestService
 	}]
 })
-Syringe.Container.destroyAllInstances()
+Syringe.destroyAllInstances()
