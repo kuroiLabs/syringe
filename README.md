@@ -108,10 +108,17 @@ export class MyClass {
 }
 
 const app = Syringe.inject<MyApp>(MyApp, {
-  providers: [{
-    use: ConcreteService,
-    for: AbstractService
-  }]
+  providers: [
+	NonDecoratedClass, // inject singletons that aren't decorated with @Injectable
+	{
+      for: AbstractService,
+      use: ConcreteService // extension type of AbstractService to provide for MyApp
+    },
+	{
+      for: AnotherAbstractService,
+	  instance: PreConstructedValueType // extension value of AnotherAbstractService to provide for MyApp
+	}
+  ]
 })
 ```
 
@@ -132,9 +139,5 @@ export class MyLifecycleClass implements Syringe.OnInit, Syringe.OnDestroy {
 }
 ```
 
-## Credits and Other Considerations
-This library is largely inspired by Google Angular's DI framework. Admittedly, I didn't read much (or any) of their source code because I'm familiar enough with Angular that I know their custom module pattern is too deeply engrained in that code for it to serve as a great example for my implementation.
-
-I moreso wrote the code with Angular DI's overall _feel_ in mind. While they make use of `reflect-metadata` and other methods to remove the need to decorate constructor arguments, I chose to leverage only TypeScript and JavaScript in my code.
-
-I also didn't want to use the paradigm of automatically detecting which instance to inject based on constructor argument type because that makes it harder to create abstraction layers. Decorating each argument with the target concretion for injection allows the instance property itself to be typed as an _abstraction_.
+## Credits / Considerations
+This library is largely inspired by the *feel* of Google Angular's DI framework, minus the custom module pattern and any external dependencies. You can use it for UI/browser apps, but it's better suited for server side Node.js/TypeScript apps.
