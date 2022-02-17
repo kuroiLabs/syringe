@@ -8,13 +8,13 @@ Syringe.inject(TestApp, {
 		{
 			for: BaseTestService,
 			provide: {
-				use: Service, scope: "global"
+				use: Service
 			}
 		},
 		{
 			for: BaseInstanceService,
 			provide: {
-				instance: InstanceService, scope: "global"
+				instance: InstanceService
 			}
 		}
 	]
