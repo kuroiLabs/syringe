@@ -1,6 +1,5 @@
-import { InjectionToken } from '../injection-token/injection-token'
-import { InjectionTokenConfig } from '../injection-token/injection-token-config.interface'
-import { Constructor } from '../utils'
+import { InjectionToken, InjectionTokenConfig } from "../container"
+import { Constructor } from "../utils"
 
 /**
  * @description Decorates a class as an injectable entity, generates an InjectionToken,

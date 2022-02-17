@@ -1,6 +1,5 @@
-import { Container } from '../container'
-import { InjectionToken } from '../injection-token'
-import { Constructor } from '../utils';
+import { addDependency, InjectionToken } from "../container"
+import { Constructor } from "../utils"
 
 /**
  * @description Decorates injected constructor parameters to register dependencies
@@ -16,6 +15,6 @@ export function Inject(_token: InjectionToken | Function | string) {
 		}
 		const _injectionKey: any = (typeof _token === "string") ? _token :
 			(typeof _token === "function" ? _token.name : _token.key)
-		Container.addDependency(_target, _injectionKey, _index)
+		addDependency(_target, _injectionKey, _index)
 	}
 }
