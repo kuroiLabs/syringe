@@ -1,10 +1,12 @@
-import { addDependency, InjectionToken } from "../container"
+import { addDependency, Token } from "../container"
 import { Constructor } from "../utils"
 
 /**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Decorators
  * @description Decorates injected constructor parameters to register dependencies
  */
-export function Inject(_token: InjectionToken | Function | string) {
+export function Inject(_token: Token) {
 	return function _injectDecorator(
 		_target: Constructor,
 		_key: string | symbol,
