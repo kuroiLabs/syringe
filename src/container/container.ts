@@ -6,9 +6,12 @@ export type Token = Constructor | InjectionToken | any
 export type InjectionScope = "global" | any
 
 export interface Provider {
-	use?: Token,
-	instance?: any,
-	for: Token
+	for: Token,
+	provide: {
+		use?: Token,
+		instance?: any,
+		scope?: InjectionScope
+	}
 }
 
 export interface InjectionModule {
@@ -65,7 +68,7 @@ export function registerToken(_token: InjectionToken): void {
 export function inject<T = any>(_key: any, _moduleConfig?: InjectionModule): T {
 	// register providers
 	if (_moduleConfig?.providers)
-		provide(_key, ..._moduleConfig.providers)
+		provide(..._moduleConfig.providers)
 
 	_key = _extractEntityName(_key)
 	const _token: InjectionToken = getToken(_key)
@@ -91,19 +94,19 @@ export function getToken(_key: any): InjectionToken {
 	return _token
 }
 
-export function provide(_scope: InjectionScope,..._providers: Provider[]): void {
+export function provide(..._providers: Provider[]): void {
 	_providers.forEach(_provider => {
-		const _providerKey: string = _extractEntityName(_provider.for)
-		if (_provider.use) {
-			if (_provider.use instanceof InjectionToken) {
-				TOKENS.set(_providerKey, _provider.use)
+		const _key: string = _extractEntityName(_provider.for)
+		if (_provider.provide.use) {
+			if (_provider.provide.use instanceof InjectionToken) {
+				TOKENS.set(_key, _provider.provide.use)
 			} else {
-				PROVIDERS.set(_providerKey, _extractEntityName(_provider.use))
+				PROVIDERS.set(_key, _extractEntityName(_provider.provide.use))
 			}
-		} else if (_provider.instance) {
-			new InjectionToken(_providerKey, {
-				scope: _scope || "global",
-				factory: () => _provider.instance
+		} else if (_provider.provide.instance) {
+			new InjectionToken(_key, {
+				scope: _provider.provide.scope || "global",
+				factory: () => _provider.provide.instance
 			})
 		}
 	})
