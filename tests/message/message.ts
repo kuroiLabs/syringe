@@ -1,4 +1,4 @@
-import { Syringe } from '../../src'
+import * as Syringe from "../../src"
 
 // manually constructed injection token to represent constant value
 const helloMessage = 'Jerry, hello!'

@@ -1,4 +1,4 @@
-import { Syringe } from "../../src";
+import * as Syringe from "../../src"
 import { generateId } from "../../src/utils";
 import { GENERATE_ID } from "../generator";
 import { BaseInstanceService } from "./base-instance-service";

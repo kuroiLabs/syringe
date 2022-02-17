@@ -1,4 +1,4 @@
-import { Syringe } from '../../src'
+import * as Syringe from "../../src"
 import { GENERATE_ID } from '../generator'
 import { InjectableClass } from '../injectable-class'
 import { OtherService } from '../other-service'
