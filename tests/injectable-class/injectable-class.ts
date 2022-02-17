@@ -1,6 +1,7 @@
 import { Syringe } from '../../src'
 import { Extra } from '../decorator'
 import { GENERATE_ID } from '../generator'
+import { BaseInstanceService } from '../instance-service'
 import { HELLO } from '../message'
 
 // non-singleton, scoped injectable
@@ -12,13 +13,15 @@ export class InjectableClass implements Syringe.OnInit, Syringe.OnDestroy {
 
 	constructor(
 		@Syringe.Inject(HELLO) private message: any,
-		@Syringe.Inject(GENERATE_ID) _generator: () => string
+		@Syringe.Inject(GENERATE_ID) _generator: () => string,
+		@Syringe.Inject(BaseInstanceService) private _instance: BaseInstanceService
 	) {
 		this.id = _generator()
 	}
 
 	public onInit() {
 		this.hello()
+		this._instance.hello()
 	}
 
 	public onDestroy() {
