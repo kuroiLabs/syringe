@@ -1,31 +1,93 @@
 import { CircularDependencyError, Constants, Constructor, generateId, NullInjectionTokenError } from "../utils";
 
-//#region types
-export type Token = Constructor | InjectionToken | any
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description This namespace runs the core injection logic and modeling to run the framework.
+ * 	Honestly, I hate that all these models are in one file, but since they all call each other,
+ * 	it's hard to split up without generating circular imports.
+ */
 
+//#region types
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Union of types that can act or be interpreted as `InjectionToken`
+ */
+export type Token = InjectionToken | Constructor | Function
+
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Union of types that can act as a scope for injection
+ */
 export type InjectionScope = "global" | any
 
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Value provided by a Provider. Can provide a Token or a pre-instaniated value type
+ */
+interface ProviderValue  {
+	use?: Token,
+	instance?: any
+}
+
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Configuration object for declaring which values to inject
+ * 	outside of the decorator system.
+ */
 export interface Provider {
 	for: Token,
-	provide: {
-		use?: Token,
-		instance?: any,
-		scope?: InjectionScope
+	scope?: InjectionScope
+	provide: ProviderValue
+}
+
+export class Provider implements Provider {
+	constructor(_scope: InjectionScope, _for: Token, _provide?: Partial<ProviderValue>) {
+		this.for = _for
+		this.scope = _scope
+		if (!_provide) {
+			if (_hasConstructor(_for))
+				this.provide = {
+					instance: _for
+				}
+			else
+				this.provide = {
+					use: _for
+				}
+		} else {
+			this.provide = _provide
+		}
 	}
 }
 
-export interface InjectionModule {
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Module configuration object for entry point injection.
+ */
+export interface ModuleConfiguration {
 	scope?: InjectionScope,
 	providers?: Provider[]
 }
 
-export interface InjectionTokenConfig {
-	key?: string
-	scope?: InjectionScope
-	factory?: () => any
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Token object for an injectable entity. Automatically registers itself
+ * 	to the Container on construction.
+ */
+export interface InjectionToken {
+	id: string;
+	key: string
+	scope: InjectionScope
+	factory: () => any
 }
 
-export class InjectionToken implements InjectionTokenConfig {
+export class InjectionToken implements InjectionToken {
 
 	public id: string
 
@@ -39,12 +101,16 @@ export class InjectionToken implements InjectionTokenConfig {
 		return this.scope === Constants.GLOBAL_SCOPE
 	}
 
-	constructor(_key: any, _config: InjectionTokenConfig) {
+	constructor(_key: any, _config: Partial<InjectionToken>) {
 		this.id = generateId()
 		this.key = _key
-		this.scope = _config.scope
-		this.factory = _config.factory
-		registerToken(this);
+		if (_config) {
+			this.scope = _config.scope
+			this.factory = _config.factory
+		} else {
+			this.factory = () => _key
+		}
+		registerToken(this)
 	}
 
 }
@@ -60,22 +126,42 @@ const INSTANCES = new Map<InjectionScope, Map<InjectionToken, any>>() // scope -
 const PROVIDERS = new Map<string, string>()
 //#endregion
 
-//#region public functions
+//#region public methods
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Stores a token in the Container's token map
+ */
 export function registerToken(_token: InjectionToken): void {
 	TOKENS.set(_token.key, _token)
 }
 
-export function inject<T = any>(_key: any, _moduleConfig?: InjectionModule): T {
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Returns a module instance with all of its dependencies (and their dependencies, and so on)
+ * 	generated and injected with a given configuration.
+ * @argument _module An injectable entity to serve as an entry point at some hierarchy
+ * 	in the Syringe application.
+ * @argument _config `ModuleConfiguration`
+ */
+export function inject<T = any>(_module: Token, _config?: ModuleConfiguration): T {
 	// register providers
-	if (_moduleConfig?.providers)
-		provide(..._moduleConfig.providers)
+	if (_config?.providers)
+		_provide(_module, ..._config.providers)
 
-	_key = _extractEntityName(_key)
+	const _key = _extractEntityName(_module)
 	const _token: InjectionToken = getToken(_key)
-	const _scope = _moduleConfig?.scope || _token.scope || _token.factory
+	const _scope = _config?.scope || _token.scope || _token.factory
 	return _generate(_scope, _token) as T
 }
 
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Registers a dependency to the Container at a given index of
+ * 	of the dependent's constructor.
+ */
 export function addDependency(_client: Constructor, _dependency: string, _index: number): void {
 	if (!DEPENDENCY_MAP.has(_client.name))
 		DEPENDENCY_MAP.set(_client.name, [])
@@ -83,6 +169,11 @@ export function addDependency(_client: Constructor, _dependency: string, _index:
 	_dependencies[_index] = _dependency
 }
 
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Returns a token by a given key.
+ */
 export function getToken(_key: any): InjectionToken {
 	_key = _extractEntityName(_key)
 	if (PROVIDERS.has(_key))
@@ -94,24 +185,11 @@ export function getToken(_key: any): InjectionToken {
 	return _token
 }
 
-export function provide(..._providers: Provider[]): void {
-	_providers.forEach(_provider => {
-		const _key: string = _extractEntityName(_provider.for)
-		if (_provider.provide.use) {
-			if (_provider.provide.use instanceof InjectionToken) {
-				TOKENS.set(_key, _provider.provide.use)
-			} else {
-				PROVIDERS.set(_key, _extractEntityName(_provider.provide.use))
-			}
-		} else if (_provider.provide.instance) {
-			new InjectionToken(_key, {
-				scope: _provider.provide.scope || "global",
-				factory: () => _provider.provide.instance
-			})
-		}
-	})
-}
-
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Destroys an instance an cleans up any of its scoped dependencies.
+ */
 export function destroyInstance(_scope: InjectionScope, _token: InjectionToken): void {
 	const _instanceMap: Map<InjectionToken, any> = INSTANCES.get(_scope)
 	if (_instanceMap) {
@@ -135,6 +213,11 @@ export function destroyInstance(_scope: InjectionScope, _token: InjectionToken):
 	}
 }
 
+/**
+ * @author kuro <kuro@kuroi.io>
+ * @namespace kuroi.io.Syringe.Container
+ * @description Clears all objects generated by the Container.
+ */
 export function destroyAllInstances(): void {
 	INSTANCES.forEach((_instanceMap: Map<InjectionToken, any>, _scope: InjectionScope) =>
 		_instanceMap.forEach((_, _token: InjectionToken) =>
@@ -144,7 +227,26 @@ export function destroyAllInstances(): void {
 }
 //#endregion
 
-//#region private functions
+//#region private methods
+function _provide(_scope: InjectionScope, ..._providers: Provider[]): void {
+	_providers.forEach(_provider => {
+		_provider = new Provider(_scope, _provider.for, _provider.provide)
+		const _key: string = _extractEntityName(_provider.for)
+		if (_provider.provide.use) {
+			if (_provider.provide.use instanceof InjectionToken) {
+				TOKENS.set(_key, _provider.provide.use)
+			} else {
+				PROVIDERS.set(_key, _extractEntityName(_provider.provide.use))
+			}
+		} else if (_provider.provide.instance) {
+			new InjectionToken(_key, {
+				scope: _provider.scope || "global",
+				factory: () => _provider.provide.instance
+			})
+		}
+	})
+}
+
 function _generate(_scope: InjectionScope, _token: InjectionToken): any {
 	const _cachedInstance: any = _getCachedInstance(_scope, _token)
 	if (_cachedInstance)
