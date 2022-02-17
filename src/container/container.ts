@@ -73,7 +73,6 @@ export interface ModuleConfiguration {
 	scope?: InjectionScope,
 	providers?: (Provider | Constructor)[]
 }
-export class ModuleConfiguration implements ModuleConfiguration {}
 
 /**
  * @author kuro <kuro@kuroi.io>
@@ -231,7 +230,7 @@ export function destroyAllInstances(): void {
 //#region private methods
 function _provide(_scope: InjectionScope, ..._providers: Array<Provider | Constructor>): void {
 	_providers.forEach(_provider => {
-		if (_provider instanceof Provider) {
+		if (_isProvider(_provider)) {
 			_provider = new Provider(_scope, _provider.for, _provider.provide)
 		} else {
 			_provider = new Provider(_scope, _provider)
@@ -251,6 +250,10 @@ function _provide(_scope: InjectionScope, ..._providers: Array<Provider | Constr
 			})
 		}
 	})
+}
+
+function _isProvider(_object: any): _object is Provider {
+	return !!(_object.for && _object.provide)
 }
 
 function _generate(_scope: InjectionScope, _token: InjectionToken): any {
