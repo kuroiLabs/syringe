@@ -1,5 +1,5 @@
 # Syringe Dependency Injection
-`Syringe` is a custom dependency injection framework meant for server-side, Node TypeScript projects. It aims to require minimal effort from the developer by not requiring manual mapping code or any dependencies.
+`Syringe` is a custom dependency injection framework meant for TypeScript projects. It aims to require minimal effort from the developer by not requiring manual mapping code or any dependencies.
 
 `Syringe` is best suited for applications with simple lifecycles and lots of singletons, as it was developed for use in a bot, and the code has not been production tested against more advanced use cases.
 
