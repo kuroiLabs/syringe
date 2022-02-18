@@ -1,4 +1,4 @@
-import { addDependency, Token } from "../container"
+import { addDependency, InjectionToken, Token } from "../container"
 import { Constructor } from "../utils"
 
 /**
@@ -15,8 +15,7 @@ export function Inject(_token: Token) {
 		if (!_token) {
 			throw new ReferenceError(`${_target.name} requested an InjectionToken (index [${_index}]) before it was initialized`)
 		}
-		const _injectionKey: any = (typeof _token === "string") ? _token :
-			(typeof _token === "function" ? _token.name : _token.key)
+		const _injectionKey: any = _token instanceof InjectionToken ? _token.key : _token.name
 		addDependency(_target, _injectionKey, _index)
 	}
 }
