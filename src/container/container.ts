@@ -1,4 +1,4 @@
-import { CircularDependencyError, Constants, Constructor, generateId, NullInjectionTokenError } from "../utils";
+import { CircularDependencyError, Constructor, NullInjectionTokenError } from "../utils";
 
 /**
  * @author kuro <kuro@kuroi.io>
@@ -81,15 +81,12 @@ export interface ModuleConfiguration {
  * 	to the Container on construction.
  */
 export interface InjectionToken {
-	id: string;
 	key: string
 	scope: InjectionScope
 	factory: () => any
 }
 
 export class InjectionToken implements InjectionToken {
-
-	public id: string
 
 	public key: string
 
@@ -98,7 +95,6 @@ export class InjectionToken implements InjectionToken {
 	public factory: () => any
 
 	constructor(_key: any, _config: Partial<InjectionToken>) {
-		this.id = generateId()
 		this.key = _key
 		if (_config) {
 			this.scope = _config.scope
