@@ -1,6 +1,5 @@
 import * as Syringe from "../../src"
-import { generateId } from "../../src/utils";
-import { GENERATE_ID } from "../generator";
+import { generateId, GENERATE_ID } from "../generator";
 import { BaseInstanceService } from "./base-instance-service";
 
 class InstanceServiceConcretion extends BaseInstanceService {

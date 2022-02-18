@@ -1,5 +1,3 @@
-import { generateId } from "../../src/utils"
-
 export abstract class BaseInstanceService {
 
 	public id: string;
