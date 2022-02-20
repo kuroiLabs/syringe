@@ -1,31 +1,37 @@
-import { Syringe } from '../../src'
-import { Service } from '../test-service'
+import * as Syringe from "../../src"
+import { Extra } from "../decorator"
+import { GENERATE_ID } from "../generator"
+import { BaseTestService } from "../test-service"
 
 @Syringe.Injectable({
-  scope: 'global'
+	scope: "global"
 })
+@Extra
 export class TestApp implements Syringe.OnInit {
 
-  private id: string
+	private id: string
 
-  constructor(@Syringe.Inject(Service) public service: Service) {
-    this.id = Syringe.generateId()
-  }
+	constructor(
+		@Syringe.Inject(BaseTestService) public service: BaseTestService,
+		@Syringe.Inject(GENERATE_ID) _generator: () => string
+	) {
+		this.id = _generator()
+	}
 
-  public onInit(): void {
-    this.hello()
-  }
+	public onInit(): void {
+		this.hello()
+	}
 
-  public onDestroy(): void {
-    this.goodbye()
-  }
+	public onDestroy(): void {
+		this.goodbye()
+	}
 
-  private hello() {
-    console.log('TestApp:::' + this.id, 'Hello!')
-  }
+	private hello() {
+		console.log("TestApp:::" + this.id, "Hello!")
+	}
 
-  private goodbye() {
-    console.log('TestApp:::' + this.id, 'Goodbye!')
-  }
+	private goodbye() {
+		console.log("TestApp:::" + this.id, "Goodbye!")
+	}
 
 }

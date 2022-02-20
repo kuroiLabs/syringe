@@ -1,30 +1,30 @@
 {
-  "name": "@kuroi/syringe",
-  "version": "1.0.4",
-  "description": "TypeScript dependency injection framework",
-  "main": "index.js",
-  "scripts": {
-    "build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json && shx cp README.md dist/README.md",
-    "pack": "npm pack ./dist",
-    "start:publish": "npm publish dist --access=public --scope=@kuroi",
-    "test:publish": "npm publish dist --access=public --scope=@kuroi --dry-run",
-    "test": "ts-node tests/test.ts",
-    "test:isolate": "ts-node tests/isolated-test.ts"
-  },
-  "keywords": [
-    "di",
-    "dependency",
-    "injection"
-  ],
-  "author": "kuro <kuro@kuroi.io>",
-  "license": "ISC",
-  "devDependencies": {
-    "shx": "^0.3.3",
-    "ts-node": "^10.2.1",
-    "typescript": "^3.5.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kuroiLabs/syringe.git"
-  }
+	"name": "@kuroi/syringe",
+	"version": "2.0.0",
+	"description": "TypeScript dependency injection framework",
+	"main": "index.js",
+	"scripts": {
+		"build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json && shx cp README.md dist/README.md",
+		"pack": "npm pack ./dist",
+		"start:publish": "npm publish dist --access=public --scope=@kuroi",
+		"test:publish": "npm publish dist --access=public --scope=@kuroi --dry-run",
+		"test": "ts-node tests/test.ts",
+		"test:isolate": "ts-node tests/isolated-test.ts"
+	},
+	"keywords": [
+		"di",
+		"dependency",
+		"injection"
+	],
+	"author": "kuro <kuro@kuroi.io>",
+	"license": "ISC",
+	"devDependencies": {
+		"shx": "^0.3.3",
+		"ts-node": "^10.2.1",
+		"typescript": "^3.5.1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kuroiLabs/syringe.git"
+	}
 }
