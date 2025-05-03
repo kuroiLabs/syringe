@@ -1,143 +1,299 @@
 # Syringe Dependency Injection
-`Syringe` is a custom dependency injection framework meant for TypeScript projects. It aims to require minimal effort from the developer by not requiring manual mapping code or any dependencies.
+`Syringe` is a lightweight dependency injection framework. Organize your code into modules and inject your dependencies anywhere within an `Injector` context.
 
-`Syringe` is best suited for applications with simple lifecycles and lots of singletons, as it was developed for use in a bot, and the code has not been production tested against more advanced use cases.
+## Providers
 
-## Usage
+Providers are the building blocks of `Syringe`. A Provider consists of two things:
 
-### Importing
-Use ES6 imports to access the `Syringe` namespace.
+1. A token representing an arbitrary provided value
+2. A `provide()` function that returns a value for the token
+
+### Example
 
 ```typescript
-import { Syringe } from '@kuroi/syringe'
-```
-
-### Creating Injectable Classes
-Mark classes as injectable entities with the `@Injectable` decorator. If your class is a singleton, provide a scope of `'global'`, otherwise leave the decorator argument blank to allow `Syringe` to construct a new instance for each injection.
-
-#### Singleton
-```typescript
-@Syringe.Injectable({
-  scope: 'global'
-})
-export class MyService implements IService {
-  // ...
+const myProvider: IProvider = {
+	token: MyClass,
+	provide: () => new MyClass()
 }
 ```
 
-#### Non-singleton
+Tokens can be anything; a string, a class, etc. As long as JavaScript can evaluate it with strict equality, it's a valid token.
+
+### Built-in Providers
+
+`Syringe` comes with a number of pre-configured `IProvider` implementations.
+
+#### `ClassProvider`
+
+`ClassProvider` is a shorthand for the example provider above -- it takes a static class definition as the `token` and provides a factory function for its constructor.
+
+There are two constructor signatures for `ClassProvider`.
+
+If you'd like to simply provide a factory for a given class, use:
+
 ```typescript
-@Syringe.Injectable()
-export class MyInstance {
-  // ...
-}
+new ClassProvider(MyClass);
 ```
 
-**Note**: The `@Injectable` decorator will not work alongside class decorators that wrap the target class in an *anonymous extending class*. If your decorator returns a `Proxy` to the target constructor or manually preserves the prototype information (particularly the `name`), `Syringe` DI should still work, but it's advised that you put the `@Injectable` decorator *first*.
+If you'd like to provide an alternate implementation for the class token, use:
+
 ```typescript
-@Syringe.Injectable()
-@Wrapper
-export class MultiDecorated {
-	// ...
-}
+new ClassProvider(MyClass, MyOtherClassImpl);
 ```
 
-### Injecting Classes
-To inject your `@Injectable` class as a dependency, use `@Syringe.Inject` to automatically supply the dependency instance to another `@Injectable` constructor. The decorator requires either the class definition for which you want to inject an instance or a direct reference to an `InjectionToken` as an argument.
+This opens the door to powerful levels of abstraction.
+
+**Note**: Invoking a `ClassProvider`'s `provide` method will only generate the class instance once;
+
+#### `ValueProvider`
+
+`ValueProvider` provides a static value for a given token. Just pass the `token` and `value` to the constructor:
+
 ```typescript
-@Syringe.Injectable()
-export class MyComponent {
-  constructor(@Syringe.Inject(MyService) private service: IService) {
-    // ...
-  }
-}
+new ValueProvider(myToken, "my value");
 ```
 
-### Creating Injection Tokens
-Sometimes, you might want to inject constants, function calls, or other non-class entities into your `@Injectable` class. In order to do this, you must manually construct an `InjectionToken` and return your value from its `factory` function.
+#### `ForwardProvider`
+
+`ForwardProvider` allows you to forward a token to an existing Provider.
 
 ```typescript
-const _someConstant: string = 'Jerry, hello! It\'s me, Uncle Leo!'
-export const UNCLE_LEO = new InjectionToken('UncleLeo', {
-  scope: 'global',
-  factory: () => _someConstant
-})
-
-// inject an ID generator function
-const GENERATE_ID = new InjectionToken('GenerateId', {
-  scope: 'global',
-  factory: () => () => Utilities.generateId()
-})
+new ForwardProvider(myToken, () => myOtherToken);
 ```
 
-Then, you can inject this token directly into an `@Injectable` class.
+This is useful if you have multiple tokens you want to point to the same value.
 
 ```typescript
-@Syringe.Injectable()
-export class MyClass {
-  public id: string;
-  constructor(
-    @Syringe.Inject(GENERATE_ID) idGenerator: () => string,
-    @Syringe.Inject(UNCLE_LEO) private greeting: string
-  ) {
-    this.id = idGenerator()
-  }
-  public greet(): void {
-    console.log(this.greeting) // Jerry, hello! It's me, Uncle Leo!
-  }
-}
-```
-
-### Bootstrapping
-To get all of your classes actually running, simply tell `Syringe` to inject the top level class(es) at the entry point(s) of your application, usually in `index.ts` or similar. `Syringe` will automatically construct all of its dependencies, and your instance is ready to go.
-
-```typescript
-const app = Syringe.inject<MyApp>(MyApp)
-app.start()
-```
-
-#### Providers
-Sometimes, you may want to inject an `abstract` class and specify a concretion at a higher level context, or just substitute one implementation for another. Such is the beauty of dependency injection.
-
-To do so, simply include a provider in the arguments to `Syringe.inject` when bootstrapping an entry point to your application.
-```typescript
-// inject Abstraction
-@Syringe.Injectable()
-export class MyClass {
-  constructor(@Syringe.Inject(AbstractService) service: AbstractService) {}
+abstract class Foo {
+	public abstract run(): void;
 }
 
-const app = Syringe.inject<MyApp>(MyApp, {
-  providers: [
-	NonDecoratedClass, // inject singletons that aren't decorated with @Injectable
-	{
-      for: AbstractService,
-      use: ConcreteService // extension type of AbstractService to provide for MyApp
-    },
-	{
-      for: AnotherAbstractService,
-	  instance: PreConstructedValueType // extension value of AnotherAbstractService to provide for MyApp
+class Bar implements Foo {
+	public run(): void {
+		// ...
 	}
-  ]
-})
+}
+
+const fooProvider: IProvider = new ForwardProvider(Foo, () => Bar);
+const barProvider: IProvider = new ClassProvider(Bar);
 ```
 
-### Lifecycles
-There are two main lifecycle hooks available to all entities managed by `Syringe`: `OnInit` and `OnDestroy`. `Syringe`'s container will automatically call these methods if implemented during construction and teardown.
+Injecting `Foo` will now function the same as injecting `Bar`.
 
-To hook into these lifecycles, implement the interfaces `Syringe.OnInit` and/or `Syringe.OnDestroy`.
+## Injectors
+
+The `Injector` class controls dependency scopes. Injectors receive a list of Providers from which it can fetch token values. Injectors are hierarchical, so if they cannot locate a Provider for a token, they will traverse up the tree to attempt to find one.
+
+Creating an `Injector` is simple:
 
 ```typescript
-@Syringe.Injectable()
-export class MyLifecycleClass implements Syringe.OnInit, Syringe.OnDestroy {
-  public onInit(): void {
-    // ...
-  }
-  public onDestroy(): void {
-    // ...
-  }
+const myInjector: Injector = new Injector({
+	parent: myParentInjector,
+	providers: [
+		new ClassProvider(MyThemeService),
+		new ValueProvider(OPTIONS, { foo: 'bar' }),
+		new ForwardProvider(BaseThemeService, () => MyThemeService)
+	]
+});
+```
+
+### Injector Context
+
+Injecting a dependency requires a valid `Injector` context. The context is stored synchronously and ephemerally on a `static` field of the `Injector` class itself, meaning the scope must be used while it's available.
+
+Attempting to inject a dependency without a valid context results in a `NullInjectorError`.
+
+## Modules
+
+The `Module` class is a a helpful utility to create, manage, and combine isolated, reusable injection scopes.
+
+A `Module` can be created with a number of options:
+
+- `name: string`
+  - A runtime alias for the `Module`. Mostly helpful with debugging.
+- `imports: Module[]`
+  - Modules inherit the providers of their imported Modules
+- `providers: IProvider[]`
+  - Providers inherent to this Module
+- `injector: Injector`
+  - The parent Injector to be used in this Module
+
+Once you've configured a `Module` with providers, you can retrieve token values from it using its `inject` method.
+
+### Example
+
+```typescript
+// create a module that provides authentication services
+const authModule: Module = new Module({
+	providers: [
+		new ClassProvider(JwtService),
+		new ClassProvider(AuthService),
+	]
+});
+
+// create a top-level module and import the authentication module
+const mainModule: Module = new Module({
+	imports: [authModule],
+})
+
+// main module can now inject providers from authModule
+const authService: AuthService = mainModule.inject(AuthService);
+```
+
+### Teardown
+
+Modules can be torn down with their `destroy` method. This will automatically destroy the `Module`, its `Injector`, and any of its child `Injector`s.
+
+## The `inject` Function
+
+`inject` is the most common way of injecting dependencies, but it requires an `Injector` context to work.
+
+### Options
+
+`inject` can take `options` to control its behavior.
+
+```typescript
+export interface InjectionOptions<T> {
+	/** If true, the system will not throw errors if it can't find a Provider */
+	optional: boolean;
+	/** If true, the system will check the current Injector's parent for a Provider first */
+	preferParent: boolean;
+	/** If specified, the system will return this value instead of throwing an error if no Provider found */
+	notFoundValue: T;
 }
 ```
 
-## Credits / Considerations
-This library is largely inspired by the *feel* of Google Angular's DI framework, minus the custom module pattern and any external dependencies. You can use it for UI/browser apps, but it's better suited for server side Node.js/TypeScript apps.
+### Examples
+
+Assume all examples have the prerequisite setup:
+
+```typescript
+const myInjector: Injector = new Injector({
+	providers: [new ClassProvider(MyClass)]
+});
+```
+
+#### Invalid `Injector` context
+
+Calling `inject` on its own won't work unless the code is being executed in an `Injector` context.
+
+```typescript
+// throws NullInjectorError
+const myClass: MyClass = inject(MyClass);
+```
+
+#### Used in `Injector` context
+
+When invoked within an `Injector` context, `inject` can access the providers for of that `Injector`.
+
+```typescript
+// returns MyClass instance
+const myClass: MyClass = myInjector.use(() => inject(MyClass));
+```
+
+Provider factory functions are always invoked with `Injector` context, so `inject` is safe to call.
+
+Take the following example, where a hypothetical class `MyService` has two constructor arguments that we want to inject. Assuming the `Injector` or its hierarchy has providers for them, they will be injected into the constructor successfully.
+
+```typescript
+class MyService {
+	constructor(
+		public readonly dependency: SomeDependency,
+		public readonly settings: Record<string, any>
+	) {
+
+	}
+}
+
+const serviceProvider: IProvider = {
+	token: MyService,
+	provide: () => new MyService(
+		inject(SomeDependency),
+		inject(SETTINGS),
+	)
+};
+```
+
+A more convenient and intuitive pattern for dependency injection in classes is to use the `inject` function for inline member assignment.
+
+This way, we can remove the `constructor` entirely and simplify the provider:
+
+```typescript
+class MyService {
+
+	public readonly dependency: SomeDependency;
+
+	public readonly settings: Record<string, any>;
+
+}
+
+const serviceProvider: IProvider = new ClassProvider(MyService);
+```
+
+This also makes it easier to extend `MyService` without having to redeclare and re-inject all of the dependencies in the `constructor`.
+
+#### Optional flag
+
+When `optional` is `true`, the system will not throw `NullProviderError` if there is no Provider.
+
+```typescript
+// throws a NullProviderError because MyOtherClass is not provided in myInjector
+const myOtherClass: MyOtherClass = myInjector.use(() => inject(MyOtherClass));
+
+// Returns undefined but does not throw a NullProviderError
+const myOtherClass: MyOtherClass | undefined = myInjector.use(() => inject(MyOtherclass, { optional: true }));
+```
+
+#### Not found value
+
+```typescript
+// throws a NullProviderError because MyOtherClass is not provided in myInjector
+const myOtherClass: MyOtherClass = myInjector.use(() => inject(MyOtherClass));
+
+// Returns {}
+const myOtherClass: MyOtherClass | undefined = myInjector.use(() => inject(MyOtherclass, { notFoundValue: {} }));
+```
+
+## Lifecycles
+
+`Syringe` exposes two main lifecycle events: `OnInit` and `OnDestroy`.
+
+### `OnInit`
+
+The `onInit` method will run once whenever the instance is created.
+
+```typescript
+class MyClass implements OnInit {
+
+	public onInit(): void {
+		console.log("MyClass init");
+	}
+
+}
+
+const injector: Injector = new Injector({
+	providers: [new ClassProvider(MyClass)]
+});
+
+injector.get(MyClass); // prints "MyClass init"
+injector.get(MyClass); // Returns the same MyClass instance and does not print again
+```
+
+### `OnDestroy`
+
+`OnDestroy` is a place to fire cleanup logic when an `Injector` is torn down.
+
+```typescript
+class MyClass implements OnDestroy {
+	public onDestroy(): void {
+		console.log("MyClass destroyed");
+	}
+}
+
+const injector: Injector = new Injector({
+	providers: [new ClassProvider(MyClass)]
+});
+const myClass: MyClass = injector.get(MyClass);
+
+injector.destroy(); // prints "MyClass destroyed"
+```
