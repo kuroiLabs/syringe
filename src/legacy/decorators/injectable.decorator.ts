@@ -1,5 +1,5 @@
 import { InjectionToken } from "../container"
-import { Constructor } from "../utils"
+import { Constructor } from "../../utils"
 
 /**
  * @author kuro <kuro@kuroi.io>

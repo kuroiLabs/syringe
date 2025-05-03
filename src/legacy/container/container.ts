@@ -1,4 +1,4 @@
-import { CircularDependencyError, Constructor, NullInjectionTokenError } from "../utils";
+import { CircularDependencyError, Constructor, NullInjectionTokenError } from "../../utils";
 
 /**
  * @author kuro <kuro@kuroi.io>
