@@ -1,5 +1,6 @@
 export * from "./circular-dependency-error";
 export * from "./constructor";
+export * from "./dependency-stack";
 export * from "./guard";
 export * from "./null-injector-error";
 export * from "./null-provider-error";
