@@ -7,6 +7,14 @@ describe("Injector", () => {
 	let injector: Injector;
 	let token: string = "mytoken";
 
+	test("should automatically assign active injector as parent", () => {
+		injector = new Injector();
+
+		injector.use(() => {
+			expect(new Injector().parent).toBe(injector);
+		});
+	});
+
 	describe("hasProvider", () => {
 		test("should return false if no provider", () => {
 			injector = new Injector();
@@ -45,6 +53,8 @@ describe("Injector", () => {
 			injector.use(() => {
 				expect(Injector.active).toBe(injector);
 			});
+
+			expect(Injector.active).toBe(null);
 		});
 
 		test("should work with async functions", async () => {
