@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, MockInstance, test, vi } from "vitest";
 import { OnDestroy, OnInit } from "../lifecycle";
-import { NullProviderError } from "../utils";
 import { Injector } from "./injector";
+import { NullProviderError } from "../common/null-provider-error";
 
 describe("Injector", () => {
 	let injector: Injector;

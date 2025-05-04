@@ -1,6 +1,8 @@
+import { NullProviderError } from "../common/null-provider-error";
 import { Provider } from "../common/provider";
-import { Destructible, isOnDestroy, isOnInit } from "../lifecycle";
-import { NullProviderError } from "../utils";
+import { Destructible } from "../lifecycle/destructible";
+import { isOnDestroy } from "../lifecycle/is-on-destroy";
+import { isOnInit } from "../lifecycle/is-on-init";
 
 /**
  * @author kuro <kuro@kuroi.io>

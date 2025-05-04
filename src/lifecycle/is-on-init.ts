@@ -1,5 +1,5 @@
-import { Guard } from "../utils";
-import { OnInit } from "./on-init.interface";
+import { Guard } from "../common";
+import { OnInit } from "./on-init";
 
 export const isOnInit: Guard<OnInit> = (x: unknown): x is OnInit => {
 	return typeof x["onInit"] === "function";

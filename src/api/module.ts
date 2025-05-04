@@ -1,4 +1,4 @@
-import { Provider } from "../common";
+import { Provider } from "../common/provider";
 import { Destructible } from "../lifecycle";
 import { Injector } from "./injector";
 

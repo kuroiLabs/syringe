@@ -1,4 +1,4 @@
-import { Provider } from "../../common";
+import { Provider } from "../../common/provider";
 
 export class ValueProvider<T = any> implements Provider<T> {
 

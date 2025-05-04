@@ -1,6 +1,6 @@
-import { Injector } from "..";
-import { Provider } from "../../common";
+import { Provider } from "../../common/provider";
 import { inject } from "../inject";
+import { Injector } from "../injector";
 
 export class ForwardProvider<T = any> implements Provider<T> {
 

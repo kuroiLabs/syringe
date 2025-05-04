@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { Provider } from "../common";
-import { NullInjectorError, NullProviderError } from "../utils";
+import { NullInjectorError, NullProviderError, Provider } from "../common";
 import { inject } from "./inject";
 import { Injector } from "./injector";
 

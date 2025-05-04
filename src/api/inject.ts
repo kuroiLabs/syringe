@@ -1,4 +1,5 @@
-import { NullInjectorError, NullProviderError } from "../utils";
+import { NullInjectorError } from "../common/null-injector-error";
+import { NullProviderError } from "../common/null-provider-error";
 import { InjectionOptions } from "./injection-options";
 import { Injector } from "./injector";
 

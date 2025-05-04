@@ -1,5 +1,5 @@
-import { Provider } from "../../common";
-import { Constructor } from "../../utils";
+import { Constructor } from "../../common/constructor";
+import { Provider } from "../../common/provider";
 
 /**
  * @author kuro <kuro@kuroi.io>
