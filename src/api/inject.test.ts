@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { NullInjectorError, NullProviderError, Provider } from "../common";
+import { NullInjectorError, NullProviderError, Provider, ProviderToken } from "../common";
 import { inject } from "./inject";
 import { Injector } from "./injector";
 
 describe("inject", () => {
-	const token: string = "test";
+	const token: ProviderToken = new ProviderToken("test");
 	let injector: Injector;
 	let value: any;
 	let provider: Provider<string>;
 
 	beforeEach(() => {
-		provider = { token, provide: () => token };
+		provider = { token, provide: () => token.name };
 	});
 
 	test("should throw a NullInjectorError if no Injector context", () => {
@@ -21,7 +21,7 @@ describe("inject", () => {
 		injector = new Injector({ providers: [provider] });
 		value = injector.use(() => inject(token));
 
-		expect(value).toBe(token);
+		expect(value).toBe(token.name);
 	});
 
 	test("should work with inline class member assignment", () => {
@@ -96,7 +96,7 @@ describe("inject", () => {
 
 			test("should provide the value from the parent injector if preferParent is true", () => {
 				value = injector.use(() => inject(token));
-				expect(value).toBe(token);
+				expect(value).toBe(token.name);
 
 				value = injector.use(() => inject(token, { preferParent: true }));
 				expect(value).toBe(alt);

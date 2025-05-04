@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, MockInstance, test, vi } from "vitest";
-import { CircularDependencyError, NullProviderError } from "../common";
+import { CircularDependencyError, NullProviderError, ProviderToken } from "../common";
 import { OnDestroy, OnInit } from "../lifecycle";
 import { Injector } from "./injector";
 
 describe("Injector", () => {
 	let injector: Injector;
-	let token: string = "mytoken";
+	let token: ProviderToken = new ProviderToken("mytoken");
 
 	afterEach(() => {
 		injector?.destroy();

@@ -7,4 +7,5 @@ export * from "./null-provider-error";
 export * from "./provide-cached";
 export * from "./provider";
 export * from "./provider-factory";
+export * from "./provider-token";
 export * from "./stringify-token";

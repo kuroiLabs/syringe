@@ -1,10 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { Injector } from "./injector";
 import { Module } from "./module";
+import { ProviderToken } from "../common";
 
 describe("Module", () => {
 	let module: Module;
-	const token: string = "test";
+	const token: ProviderToken = new ProviderToken("test");
 
 	test("should provide itself", () => {
 		module = new Module();
