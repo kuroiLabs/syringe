@@ -17,7 +17,19 @@ const myProvider: Provider = {
 }
 ```
 
-Tokens can be anything; a string, a class, etc. As long as JavaScript can evaluate it with strict equality, it's a valid token.
+Tokens can be anything; a string, a class, etc. As long as JavaScript can evaluate it with strict equality, it's a valid token. However, developers should be careful with using primitives like strings and numbers as tokens as they must be unique to avoid conflicting pointers.
+
+`Syringe` comes with a primitive `ProviderToken` class that is great for representing arbitrary values.
+
+```typescript
+const token: ProviderToken = new ProviderToken("myToken");
+const myProvider: IProvider = {
+	token,
+	provide: () => { ... }
+};
+```
+
+Because `token` is an object reference, even if you create more `ProviderToken`s with `name = "myToken"` (not recommended, obviously), the original token is still unique.
 
 ### Built-in Providers
 
