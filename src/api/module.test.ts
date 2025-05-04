@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { inject } from "./inject";
 import { Injector } from "./injector";
 import { Module } from "./module";
 
@@ -9,7 +8,7 @@ describe("Module", () => {
 
 	test("should provide itself", () => {
 		module = new Module();
-		expect(module.run(() => inject(Module))).toBe(module);
+		expect(module.inject(Module)).toBe(module);
 	});
 
 	test("should use specified parent injector", () => {
@@ -38,5 +37,24 @@ describe("Module", () => {
 		});
 
 		expect(module.inject(token)).toBe(100);
+	});
+
+	test("hasProvider should return true if the provider exists anywhere in its scope", () => {
+		class ProvidedClass {
+
+		}
+
+		const parent: Injector = new Injector({
+			providers: [{
+				token: ProvidedClass,
+				provide: () => new ProvidedClass()
+			}]
+		});
+
+		module = new Module({
+			imports: [new Module({ injector: parent })]
+		});
+
+		expect(module.hasProvider(ProvidedClass)).toBe(true);
 	});
 });

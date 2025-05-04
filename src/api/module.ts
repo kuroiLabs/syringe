@@ -4,17 +4,17 @@ import { Injector } from "./injector";
 
 /**
  * @author kuro <kuro@kuroi.io>
- * @description Utility class for grouping and managing isolated and reusable Injection providers
+ * @description Utility class for grouping and managing isolated and reusable Injectors and Providers
  */
 export class Module extends Destructible implements Module.Options {
 
 	public name: string;
 
-	public injector: Injector;
+	public readonly injector: Injector;
 
-	public imports: Module[];
+	public readonly imports: Module[];
 
-	public providers: Provider<any>[];
+	public readonly providers: Provider<any>[];
 
 	public constructor();
 	public constructor(options: Partial<Module.Options>);
@@ -43,6 +43,18 @@ export class Module extends Destructible implements Module.Options {
 		this.injector.register(...providers);
 	}
 
+	public hasProvider(token: any): boolean {
+		if (this.injector.hasProvider(token))
+			return true;
+
+		for (const imported of this.imports) {
+			if (imported.hasProvider(token))
+				return true;
+		}
+
+		return false;
+	}
+
 	public getAllProviders(): Provider[] {
 		const providers: Provider[] = [];
 
@@ -61,11 +73,8 @@ export class Module extends Destructible implements Module.Options {
 		return this.injector.get(token);
 	}
 
-	public run<T = any>(context: () => T): T {
-		return this.injector.use(context);
-	}
-
-	public destroy(): void {
+	public override destroy(): void {
+		super.destroy();
 		this.injector.destroy();
 	}
 
