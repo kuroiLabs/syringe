@@ -22,7 +22,6 @@ describe("Module", () => {
 
 		module = new Module({ injector: parent });
 
-		expect(module.injector.hasProvider(token)).toBe(false);
 		expect(() => module.inject(token)).not.toThrow();
 	});
 

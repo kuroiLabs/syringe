@@ -1,6 +1,6 @@
+import { Provider } from "../common/provider";
 import { Destructible, isOnDestroy, isOnInit } from "../lifecycle";
 import { NullProviderError } from "../utils";
-import { Provider } from "../common/provider";
 
 /**
  * @author kuro <kuro@kuroi.io>
@@ -52,7 +52,16 @@ export class Injector extends Destructible {
 	 * @returns `true` if the Injector has a Provider for the token
 	 */
 	public hasProvider(token: any): boolean {
-		return this.providers.has(token);
+		let injector: Injector = this;
+
+		while (injector) {
+			if (injector.providers.has(token))
+				return true;
+
+			injector = injector.parent;
+		}
+
+		return false;
 	}
 
 	/**
@@ -92,7 +101,7 @@ export class Injector extends Destructible {
 		let injector: Injector = this;
 
 		while (injector) {
-			if (!injector.hasProvider(token)) {
+			if (!injector.providers.has(token)) {
 				injector = injector.parent;
 				continue;
 			}
