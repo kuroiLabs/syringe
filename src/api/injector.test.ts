@@ -97,6 +97,12 @@ describe("Injector", () => {
 
 			expect(injector.get(token, notFoundValue)).toBe(notFoundValue);
 		});
+
+		test("should provide itself", () => {
+			injector = new Injector();
+
+			expect(injector.get(Injector)).toBe(injector);
+		});
 	});
 
 	describe("destroy", () => {
