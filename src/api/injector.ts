@@ -1,6 +1,6 @@
 import { Destructible, isOnDestroy, isOnInit } from "../lifecycle";
 import { NullProviderError } from "../utils";
-import { IProvider } from "../common/provider";
+import { Provider } from "../common/provider";
 
 /**
  * @author kuro <kuro@kuroi.io>
@@ -20,7 +20,7 @@ export class Injector extends Destructible {
 	protected readonly children: Set<Injector> = new Set();
 
 	/** Providers accessible in this `Injector` */
-	protected readonly providers: Map<any, IProvider> = new Map([
+	protected readonly providers: Map<any, Provider> = new Map([
 		[Injector, {
 			token: Injector,
 			provide: () => this
@@ -59,8 +59,8 @@ export class Injector extends Destructible {
 	 * Adds a Provider to the Injector
 	 * @param provider The provider to register
 	 */
-	public register(...providers: IProvider[]): void {
-		providers.forEach((provider: IProvider) => {
+	public register(...providers: Provider[]): void {
+		providers.forEach((provider: Provider) => {
 			this.providers.set(provider.token, provider);
 		})
 	}
@@ -139,7 +139,7 @@ export namespace Injector {
 
 	export interface Options {
 		parent: Injector;
-		providers: IProvider[];
+		providers: Provider[];
 	}
 
 }

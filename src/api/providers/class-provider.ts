@@ -7,22 +7,20 @@ import { Constructor } from "../../utils";
  * 	classes with argumentless constructors. Classes with constructor arguments should
  * 	be manually instantiated within an explicit injection context.
  */
-export class ClassProvider<T extends Object> extends Provider<T> {
+export class ClassProvider<T extends Object> implements Provider<T> {
 
 	public constructor(type: Constructor<T, []>);
 	public constructor(token: any, type: Constructor<T, []>);
 
 	public constructor(
-		readonly token: any,
+		public readonly token: any,
 		public readonly type?: Constructor<T, []>
 	) {
-		super(token);
-
 		if (!this.type)
 			this.type = token;
 	}
 
-	public override provide(): T {
+	public provide(): T {
 		return new this.type();
 	}
 

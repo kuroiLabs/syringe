@@ -1,6 +1,6 @@
 import { ProviderFactory } from "./provider-factory";
 
-export interface IProvider<T = any> {
+export interface Provider<T = any> {
 	token: any;
 	provide: ProviderFactory<T>;
 }

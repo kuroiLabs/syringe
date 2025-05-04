@@ -1,4 +1,4 @@
-import { IProvider } from "../common";
+import { Provider } from "../common";
 import { Destructible } from "../lifecycle";
 import { Injector } from "./injector";
 
@@ -14,7 +14,7 @@ export class Module extends Destructible implements Module.Options {
 
 	public imports: Module[];
 
-	public providers: IProvider<any>[];
+	public providers: Provider<any>[];
 
 	public constructor();
 	public constructor(options: Partial<Module.Options>);
@@ -38,13 +38,13 @@ export class Module extends Destructible implements Module.Options {
 		});
 	}
 
-	public addProvider(...providers: IProvider[]): void {
+	public addProvider(...providers: Provider[]): void {
 		this.providers.push(...providers);
 		this.injector.register(...providers);
 	}
 
-	public getAllProviders(): IProvider[] {
-		const providers: IProvider[] = [];
+	public getAllProviders(): Provider[] {
+		const providers: Provider[] = [];
 
 		this.imports.forEach((imported: Module) => {
 			providers.push(...imported.getAllProviders());
@@ -78,7 +78,7 @@ export namespace Module {
 		/** Modules inherit the providers of their imported Modules */
 		imports: Module[];
 		/** Providers inherent to this Module */
-		providers: IProvider[];
+		providers: Provider[];
 		/** The parent Injector to be used in this Module */
 		injector: Injector;
 	}

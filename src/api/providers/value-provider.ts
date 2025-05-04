@@ -1,15 +1,15 @@
 import { Provider } from "../../common";
 
-export class ValueProvider<T = any> extends Provider<T> {
+export class ValueProvider<T = any> implements Provider<T> {
 
 	public constructor(
-		readonly token: any,
-		public override readonly value: T
+		public readonly token: any,
+		public readonly value: T
 	) {
-		super(token);
+
 	}
 
-	public override provide(): T {
+	public provide(): T {
 		return this.value;
 	}
 

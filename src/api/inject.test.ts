@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { IProvider } from "../common";
+import { Provider } from "../common";
 import { NullInjectorError, NullProviderError } from "../utils";
 import { inject } from "./inject";
 import { Injector } from "./injector";
@@ -8,7 +8,7 @@ describe("inject", () => {
 	const token: string = "test";
 	let injector: Injector;
 	let value: any;
-	let provider: IProvider<string>;
+	let provider: Provider<string>;
 
 	beforeEach(() => {
 		provider = { token, provide: () => token };

@@ -1,25 +1,21 @@
 import { Injector } from "..";
-import { inject } from "../inject";
 import { Provider } from "../../common";
+import { inject } from "../inject";
 
-export class ForwardProvider<T = any> extends Provider<T> {
+export class ForwardProvider<T = any> implements Provider<T> {
 
 	public constructor(
-		readonly token: any,
+		public readonly token: any,
 		protected readonly forwarder: () => any
 	) {
-		super(token);
+
 	}
 
-	public override provide(): T {
-		if (!this.value) {
-			const token: any = this.forwarder();
-			const injector: Injector = inject(Injector);
+	public provide(): T {
+		const token: any = this.forwarder();
+		const injector: Injector = inject(Injector);
 
-			this.value = injector.get(token);
-		}
-
-		return this.value;
+		return injector.get<T>(token);
 	}
 
 }
