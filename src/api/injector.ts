@@ -1,3 +1,4 @@
+import { DependencyStack } from "../common/dependency-stack";
 import { NullProviderError } from "../common/null-provider-error";
 import { Provider } from "../common/provider";
 import { Destructible } from "../lifecycle/destructible";
@@ -14,6 +15,8 @@ export class Injector extends Destructible {
 
 	/** The currently active `Injector` instance */
 	public static active: Injector | null = null;
+
+	protected static readonly stack: DependencyStack = new DependencyStack();
 
 	/** The parent of this `Injector` */
 	public readonly parent?: Injector;
@@ -111,12 +114,15 @@ export class Injector extends Destructible {
 			let value: T;
 
 			if (!injector.values.has(token)) {
+				Injector.stack.push(token);
+
 				value = injector.use(() => injector.providers.get(token).provide());
 
 				if (isOnInit(value))
 					value.onInit();
 
 				injector.values.set(token, value);
+				Injector.stack.clear();
 			} else
 				value = injector.values.get(token);
 

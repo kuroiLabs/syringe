@@ -1,11 +1,15 @@
-import { beforeEach, describe, expect, MockInstance, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, MockInstance, test, vi } from "vitest";
+import { CircularDependencyError, NullProviderError } from "../common";
 import { OnDestroy, OnInit } from "../lifecycle";
 import { Injector } from "./injector";
-import { NullProviderError } from "../common/null-provider-error";
 
 describe("Injector", () => {
 	let injector: Injector;
 	let token: string = "mytoken";
+
+	afterEach(() => {
+		injector?.destroy();
+	});
 
 	test("should automatically assign active injector as parent", () => {
 		injector = new Injector();
@@ -124,6 +128,45 @@ describe("Injector", () => {
 			injector = new Injector();
 
 			expect(injector.get(Injector)).toBe(injector);
+		});
+
+		test("should handle circular dependencies", () => {
+			class A {
+				constructor(b: B) {
+
+				}
+			}
+
+			class B {
+				constructor(c: C) {
+
+				}
+			}
+
+			class C {
+				constructor(a: A) {
+
+				}
+			}
+
+			injector = new Injector({
+				providers: [
+					{
+						token: A,
+						provide: () => new A(injector.get(B))
+					},
+					{
+						token: B,
+						provide: () => new B(injector.get(C))
+					},
+					{
+						token: C,
+						provide: () => new B(injector.get(A))
+					},
+				]
+			});
+
+			expect(() => injector.get(A)).toThrow(CircularDependencyError);
 		});
 	});
 
