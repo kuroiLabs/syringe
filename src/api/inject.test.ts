@@ -70,19 +70,19 @@ describe("inject", () => {
 			})
 		});
 	
-		describe("notFoundValue", () => {
-			let notFoundValue: string;
+		describe("fallback", () => {
+			let fallback: string;
 
 			beforeEach(() => {
-				notFoundValue = "oh well";
+				fallback = "oh well";
 			});
 
-			test("should fall back to notFoundValue if supplied", () => {
-				value = injector.use(() => inject(token, { notFoundValue }));
-				expect(value).toBe(notFoundValue);
+			test("should use fallback if supplied", () => {
+				value = injector.use(() => inject(token, { fallback }));
+				expect(value).toBe(fallback);
 			});
 
-			test("should throw a NullProviderError if notFoundValue not supplied", () => {
+			test("should throw a NullProviderError if fallback not supplied", () => {
 				expect(() => injector.use(() => inject(token))).toThrow(NullProviderError);
 			});
 		});

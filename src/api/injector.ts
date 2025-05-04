@@ -90,14 +90,14 @@ export class Injector extends Destructible {
 	}
 
 	public get<T = any>(token: any): T;
-	public get<T = any>(token: any, notFoundValue: T): T;
+	public get<T = any>(token: any, fallback: T): T;
 
 	/**
 	 * Extracts a value for a given Provider token
 	 * @param token The token representing the Provider
-	 * @param notFoundValue An optional fallback value if no available Provider
+	 * @param fallback An optional fallback value if no available Provider
 	 */
-	public get<T = any>(token: any, notFoundValue?: T): T {
+	public get<T = any>(token: any, fallback?: T): T {
 		let injector: Injector = this;
 
 		while (injector) {
@@ -121,10 +121,10 @@ export class Injector extends Destructible {
 			return value;
 		}
 
-		if (notFoundValue === undefined)
+		if (fallback === undefined)
 			throw new NullProviderError(token);
 
-		return notFoundValue;
+		return fallback;
 	}
 
 	public destroy(): void {

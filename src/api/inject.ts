@@ -28,8 +28,8 @@ export function inject<T = any>(token: any, options?: Partial<InjectionOptions<T
 		return injector.get(token);
 	} catch (e) {
 		if (e instanceof NullProviderError) {
-			if (options?.notFoundValue)
-				return options.notFoundValue;
+			if (options?.fallback)
+				return options.fallback;
 
 			if (options?.optional)
 				return undefined;

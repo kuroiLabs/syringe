@@ -102,7 +102,7 @@ describe("Injector", () => {
 			expect(() => injector.get(token)).toThrow(NullProviderError);
 		});
 
-		test("should not throw an error provided a not-found value", () => {
+		test("should not throw an error provided a fallback value", () => {
 			const notFoundValue: string = "i tried";
 
 			injector = new Injector();
