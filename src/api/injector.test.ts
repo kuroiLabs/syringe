@@ -6,7 +6,7 @@ import { Injector } from "./injector";
 describe("Injector", () => {
 	let injector: Injector;
 	let token: string = "mytoken";
-	
+
 	describe("hasProvider", () => {
 		test("should return false if no provider", () => {
 			injector = new Injector();
@@ -45,6 +45,18 @@ describe("Injector", () => {
 			injector.use(() => {
 				expect(Injector.active).toBe(injector);
 			});
+		});
+
+		test("should work with async functions", async () => {
+			injector = new Injector();
+
+			const result: string = await injector.use(async () => {
+				const value: string = await Promise.resolve("youcantmakeatomletwithoutbreakingsomegregs");
+
+				return value;
+			});
+
+			expect(result).toBe("youcantmakeatomletwithoutbreakingsomegregs");
 		});
 	});
 
