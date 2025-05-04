@@ -11,7 +11,7 @@ Providers are the building blocks of `Syringe`. A Provider consists of two thing
 ### Example
 
 ```typescript
-const myProvider: IProvider = {
+const myProvider: Provider = {
 	token: MyClass,
 	provide: () => new MyClass()
 }
@@ -21,7 +21,7 @@ Tokens can be anything; a string, a class, etc. As long as JavaScript can evalua
 
 ### Built-in Providers
 
-`Syringe` comes with a number of pre-configured `IProvider` implementations.
+`Syringe` comes with a number of pre-configured `Provider` implementations.
 
 #### `ClassProvider`
 
@@ -74,8 +74,8 @@ class Bar implements Foo {
 	}
 }
 
-const fooProvider: IProvider = new ForwardProvider(Foo, () => Bar);
-const barProvider: IProvider = new ClassProvider(Bar);
+const fooProvider: Provider = new ForwardProvider(Foo, () => Bar);
+const barProvider: Provider = new ClassProvider(Bar);
 ```
 
 Injecting `Foo` will now function the same as injecting `Bar`.
@@ -113,7 +113,7 @@ A `Module` can be created with a number of options:
   - A runtime alias for the `Module`. Mostly helpful with debugging.
 - `imports: Module[]`
   - Modules inherit the providers of their imported Modules
-- `providers: IProvider[]`
+- `providers: Provider[]`
   - Providers inherent to this Module
 - `injector: Injector`
   - The parent Injector to be used in this Module
@@ -136,7 +136,7 @@ const mainModule: Module = new Module({
 	imports: [authModule],
 })
 
-// main module can now inject providers from authModule
+// mainModule can now inject providers from authModule
 const authService: AuthService = mainModule.inject(AuthService);
 ```
 
@@ -159,7 +159,7 @@ export interface InjectionOptions<T> {
 	/** If true, the system will check the current Injector's parent for a Provider first */
 	preferParent: boolean;
 	/** If specified, the system will return this value instead of throwing an error if no Provider found */
-	notFoundValue: T;
+	fallback: T;
 }
 ```
 
@@ -199,13 +199,13 @@ Take the following example, where a hypothetical class `MyService` has two const
 class MyService {
 	constructor(
 		public readonly dependency: SomeDependency,
-		public readonly settings: Record<string, any>
+		public readonly settings: Settings
 	) {
 
 	}
 }
 
-const serviceProvider: IProvider = {
+const serviceProvider: Provider = {
 	token: MyService,
 	provide: () => new MyService(
 		inject(SomeDependency),
@@ -221,16 +221,48 @@ This way, we can remove the `constructor` entirely and simplify the provider:
 ```typescript
 class MyService {
 
-	public readonly dependency: SomeDependency;
+	public readonly dependency: SomeDependency = inject(SomeDependency);
 
-	public readonly settings: Record<string, any>;
+	public readonly settings: Settings = inject(Settings);
 
 }
 
-const serviceProvider: IProvider = new ClassProvider(MyService);
+const serviceProvider: Provider = new ClassProvider(MyService);
 ```
 
 This also makes it easier to extend `MyService` without having to redeclare and re-inject all of the dependencies in the `constructor`.
+
+#### Asynchronous Execution
+
+`inject` is meant to be used in synchronous contexts, as the active `Injector` is always cleared after use.
+
+The following would not work:
+
+```typescript
+async function getTransformedData() {
+	const data = await getData();
+	
+	// doesn't work because active `Injector` was cleared
+	// while awaiting getData()
+	return inject(TransformService).transform(data);
+}
+
+const myData = await myInjector.use(getTransFormedData);
+```
+
+To achieve something like this, inject all require dependencies synchronously:
+
+```typescript
+async function getTransformedData() {
+	// synchronous injection to be referenced later after async logic
+	const transformService: TransformService = inject(TransformService);
+	const data = await getData();
+
+	return transformService.transform(data);
+}
+
+const myData = await myInjector.use(getTransformedData);
+```
 
 #### Optional flag
 
@@ -251,7 +283,7 @@ const myOtherClass: MyOtherClass | undefined = myInjector.use(() => inject(MyOth
 const myOtherClass: MyOtherClass = myInjector.use(() => inject(MyOtherClass));
 
 // Returns {}
-const myOtherClass: MyOtherClass | undefined = myInjector.use(() => inject(MyOtherclass, { notFoundValue: {} }));
+const myOtherClass: MyOtherClass | undefined = myInjector.use(() => inject(MyOtherclass, { fallback: {} }));
 ```
 
 ## Lifecycles
