@@ -4,12 +4,13 @@
 	"description": "TypeScript dependency injection framework",
 	"main": "index.js",
 	"scripts": {
-		"build": "shx rm -Rf dist && tsc --project tsconfig.build.json && shx cp package.json dist/package.json && shx cp README.md dist/README.md",
+		"build": "rm -Rf dist && tsc --project tsconfig.build.json && cp package.json dist/package.json && cp README.md dist/README.md",
 		"pack": "npm pack ./dist",
-		"start:publish": "npm publish dist --access=public --scope=@kuroi",
-		"test:publish": "npm publish dist --access=public --scope=@kuroi --dry-run",
-		"test": "ts-node tests/test.ts",
-		"test:isolate": "ts-node tests/isolated-test.ts"
+		"predeploy": "npm run test && npm run build",
+		"predeploy:test": "npm run test && npm run build",
+		"deploy": "npm publish dist --access=public --scope=@kuroi",
+		"deploy:test": "npm publish dist --access=public --scope=@kuroi --dry-run",
+		"test": "vitest run"
 	},
 	"keywords": [
 		"di",
