@@ -134,10 +134,28 @@ const authModule: Module = new Module({
 // create a top-level module and import the authentication module
 const mainModule: Module = new Module({
 	imports: [authModule],
-})
+});
 
 // mainModule can now inject providers from authModule
 const authService: AuthService = mainModule.inject(AuthService);
+```
+
+Consolidate common logic into module factories that can be configured with arguments:
+
+```typescript
+function authModule(settings: Object): Module {
+	return new Module({
+		providers: [
+			new ClassProvider(JwtService),
+			new ClassProvider(AuthService),
+			new ValueProvider(SETTINGS, settings),
+		]
+	});
+}
+
+const mainModule: Module = new Module({
+	imports: [authModule({ ... })]
+});
 ```
 
 ### Teardown
