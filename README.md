@@ -90,7 +90,7 @@ const fooProvider: Provider = new ForwardProvider(Foo, () => Bar);
 const barProvider: Provider = new ClassProvider(Bar);
 ```
 
-Injecting `Foo` will now function the same as injecting `Bar`.
+Injecting `Foo` will now function the same as injecting `Bar` and will not create a new instance.
 
 ## Injectors
 
@@ -99,6 +99,16 @@ The `Injector` class controls dependency scopes. Injectors receive a list of Pro
 Creating an `Injector` is simple:
 
 ```typescript
+class BaseThemeService {
+
+	public readonly options: Record<string, any> = inject(OPTIONS);
+
+}
+
+class MyThemeService extends BaseThemeService {
+
+}
+
 const myInjector: Injector = new Injector({
 	parent: myParentInjector,
 	providers: [
@@ -107,6 +117,9 @@ const myInjector: Injector = new Injector({
 		new ForwardProvider(BaseThemeService, () => MyThemeService)
 	]
 });
+
+myInjector.get(MyThemeService); // returns MyThemeServicr instance
+myInjector.get(BaseThemeService); // returns MyThemeServicr instance
 ```
 
 ### Injector Context
