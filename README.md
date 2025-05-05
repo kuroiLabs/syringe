@@ -55,7 +55,9 @@ new ClassProvider(MyClass, MyOtherClassImpl);
 
 This opens the door to powerful levels of abstraction.
 
-**Note**: Invoking a `ClassProvider`'s `provide` method will only generate the class instance once;
+**Note**:
+- `ClassProvider` expects classes with argumentless constructors
+- Invoking a `ClassProvider`'s `provide` method will only generate the class instance once.
 
 #### `ValueProvider`
 
