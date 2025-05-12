@@ -14,7 +14,11 @@ import { isOnInit } from "../lifecycle/is-on-init";
 export class Injector extends Destructible {
 
 	/** The currently active `Injector` instance */
-	public static active: Injector | null = null;
+	public static get active(): Injector | null {
+		return this.queue[this.queue.length - 1] ?? null;
+	};
+
+	protected static readonly queue: Injector[] = [];
 
 	protected static readonly stack: DependencyStack = new DependencyStack();
 
@@ -85,11 +89,11 @@ export class Injector extends Destructible {
 	 * @param context Logic to run in the context of this `Injector`
 	 */
 	public use<T = any>(context: () => T): T {
-		Injector.active = this;
+		Injector.queue.push(this);
 
 		const ctx: T = context();
 
-		Injector.active = null;
+		Injector.queue.pop();
 
 		return ctx;
 	}
