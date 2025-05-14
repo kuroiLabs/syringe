@@ -1,15 +1,19 @@
 {
 	"name": "@kuroi/syringe",
-	"version": "2.0.0",
+	"version": "3.0.0-rc1",
 	"description": "TypeScript dependency injection framework",
 	"main": "index.js",
 	"scripts": {
-		"build": "shx rm -Rf dist && tsc && shx cp package.json dist/package.json && shx cp README.md dist/README.md",
+		"build": "rm -Rf dist && tsc --project tsconfig.build.json && cp package.json dist/package.json && cp README.md dist/README.md",
 		"pack": "npm pack ./dist",
-		"start:publish": "npm publish dist --access=public --scope=@kuroi",
-		"test:publish": "npm publish dist --access=public --scope=@kuroi --dry-run",
-		"test": "ts-node tests/test.ts",
-		"test:isolate": "ts-node tests/isolated-test.ts"
+		"predeploy": "npm run verify",
+		"predeploy:test": "npm run verify",
+		"predeploy:local": "npm run verify",
+		"deploy": "npm publish ./dist --access=public --scope=@kuroi",
+		"deploy:test": "npm publish ./dist --access=public --scope=@kuroi --dry-run",
+		"deploy:local": "npm link ./dist",
+		"test": "vitest run",
+		"verify": "npm run test && npm run build"
 	},
 	"keywords": [
 		"di",
@@ -21,7 +25,8 @@
 	"devDependencies": {
 		"shx": "^0.3.3",
 		"ts-node": "^10.2.1",
-		"typescript": "^3.5.1"
+		"typescript": "^5.8.3",
+		"vitest": "^3.1.2"
 	},
 	"repository": {
 		"type": "git",
