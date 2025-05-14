@@ -9,9 +9,9 @@
 		"predeploy": "npm run verify",
 		"predeploy:test": "npm run verify",
 		"predeploy:local": "npm run verify",
-		"deploy": "npm publish dist --access=public --scope=@kuroi",
-		"deploy:test": "npm publish dist --access=public --scope=@kuroi --dry-run",
-		"deploy:local": "npm link dist",
+		"deploy": "npm publish ./dist --access=public --scope=@kuroi",
+		"deploy:test": "npm publish ./dist --access=public --scope=@kuroi --dry-run",
+		"deploy:local": "npm link ./dist",
 		"test": "vitest run",
 		"verify": "npm run test && npm run build"
 	},
